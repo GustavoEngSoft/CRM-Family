@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { PessoasAPI } from '../../services/api';
 import MenuLateral from '../menuLateral/menuLateral';
 import './pessoasPorTag.css';
 
@@ -10,35 +11,17 @@ function PessoasPorTag() {
   const [currentPage, setCurrentPage] = useState(1);
   const [showModal, setShowModal] = useState(false);
   const [editingPessoa, setEditingPessoa] = useState(null);
+  const [pessoas, setPessoas] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [formData, setFormData] = useState({
     nome: '',
-    sobrenome: '',
-    telefone: '',
     email: '',
+    telefone: '',
     endereco: '',
-    etiquetas: []
+    tags: []
   });
   const itemsPerPage = 6;
-
-  // Dados simulados de pessoas por tag
-  const pessoasPorTag = {
-    'novo-convertido': [
-      { id: 1, nome: '[Nome]', sobrenome: '[Sobrenome]', selected: false, telefone: '', email: '', endereco: '', etiquetas: ['Novo Convertido'] },
-      { id: 2, nome: '[Nome]', sobrenome: '[Sobrenome]', selected: false, telefone: '', email: '', endereco: '', etiquetas: ['Novo Convertido'] },
-      { id: 3, nome: '[Nome]', sobrenome: '[Sobrenome]', selected: false, telefone: '', email: '', endereco: '', etiquetas: ['Novo Convertido'] },
-      { id: 4, nome: '[Nome]', sobrenome: '[Sobrenome]', selected: false, telefone: '', email: '', endereco: '', etiquetas: ['Novo Convertido'] },
-      { id: 5, nome: '[Nome]', sobrenome: '[Sobrenome]', selected: false, telefone: '', email: '', endereco: '', etiquetas: ['Novo Convertido'] },
-      { id: 6, nome: '[Nome]', sobrenome: '[Sobrenome]', selected: false, telefone: '', email: '', endereco: '', etiquetas: ['Novo Convertido'] },
-      { id: 7, nome: '[Nome]', sobrenome: '[Sobrenome]', selected: false, telefone: '', email: '', endereco: '', etiquetas: ['Novo Convertido'] },
-      { id: 8, nome: '[Nome]', sobrenome: '[Sobrenome]', selected: false, telefone: '', email: '', endereco: '', etiquetas: ['Novo Convertido'] },
-      { id: 9, nome: '[Nome]', sobrenome: '[Sobrenome]', selected: false, telefone: '', email: '', endereco: '', etiquetas: ['Novo Convertido'] },
-      { id: 10, nome: '[Nome]', sobrenome: '[Sobrenome]', selected: false, telefone: '', email: '', endereco: '', etiquetas: ['Novo Convertido'] },
-      { id: 11, nome: '[Nome]', sobrenome: '[Sobrenome]', selected: false, telefone: '', email: '', endereco: '', etiquetas: ['Novo Convertido'] },
-      { id: 12, nome: '[Nome]', sobrenome: '[Sobrenome]', selected: false, telefone: '', email: '', endereco: '', etiquetas: ['Novo Convertido'] }
-    ]
-  };
-
-  const [pessoas, setPessoas] = useState(pessoasPorTag['novo-convertido'] || []);
 
   const tagNames = {
     'novo-convertido': 'Novo Convertido',
@@ -64,8 +47,27 @@ function PessoasPorTag() {
 
   const displayName = tagNames[tagName] || tagName;
 
+  const loadPessoasByTag = async () => {
+    try {
+      setLoading(true);
+      const tagToSearch = tagNames[tagName] || tagName;
+      const data = await PessoasAPI.getByTag(tagToSearch);
+      setPessoas(data.map(p => ({ ...p, selected: false })));
+      setError('');
+    } catch (err) {
+      setError('Erro ao carregar pessoas: ' + err.message);
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadPessoasByTag();
+  }, [tagName]);
+
   const filteredPessoas = pessoas.filter(pessoa =>
-    `${pessoa.nome} ${pessoa.sobrenome}`.toLowerCase().includes(searchTerm.toLowerCase())
+    pessoa.nome.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const totalPages = Math.ceil(filteredPessoas.length / itemsPerPage);
@@ -82,12 +84,11 @@ function PessoasPorTag() {
   const handleEditClick = (pessoa) => {
     setEditingPessoa(pessoa);
     setFormData({
-      nome: pessoa.nome,
-      sobrenome: pessoa.sobrenome,
-      telefone: pessoa.telefone || '',
+      nome: pessoa.nome || '',
       email: pessoa.email || '',
+      telefone: pessoa.telefone || '',
       endereco: pessoa.endereco || '',
-      etiquetas: [...(pessoa.etiquetas || [])]
+      tags: pessoa.tags || []
     });
     setShowModal(true);
   };
@@ -106,10 +107,10 @@ function PessoasPorTag() {
   };
 
   const handleAddTag = (tagName) => {
-    if (!formData.etiquetas.includes(tagName)) {
+    if (!formData.tags.includes(tagName)) {
       setFormData(prev => ({
         ...prev,
-        etiquetas: [...prev.etiquetas, tagName]
+        tags: [...prev.tags, tagName]
       }));
     }
   };
@@ -117,25 +118,21 @@ function PessoasPorTag() {
   const handleRemoveTag = (tagName) => {
     setFormData(prev => ({
       ...prev,
-      etiquetas: prev.etiquetas.filter(t => t !== tagName)
+      tags: prev.tags.filter(t => t !== tagName)
     }));
   };
 
-  const handleSave = () => {
-    setPessoas(pessoas.map(p =>
-      p.id === editingPessoa.id
-        ? {
-            ...p,
-            nome: formData.nome,
-            sobrenome: formData.sobrenome,
-            telefone: formData.telefone,
-            email: formData.email,
-            endereco: formData.endereco,
-            etiquetas: formData.etiquetas
-          }
-        : p
-    ));
-    handleModalClose();
+  const handleSave = async () => {
+    try {
+      await PessoasAPI.update(editingPessoa.id, formData);
+      setPessoas(pessoas.map(p =>
+        p.id === editingPessoa.id ? { ...p, ...formData } : p
+      ));
+      handleModalClose();
+      alert('Pessoa atualizada com sucesso!');
+    } catch (err) {
+      alert('Erro ao atualizar pessoa: ' + err.message);
+    }
   };
 
   const handlePrevPage = () => {
@@ -166,19 +163,17 @@ function PessoasPorTag() {
               />
               <span className="search-icon-tag">🔍</span>
             </div>
-            <button className="adicionar-btn">
-              Adicionar <span className="plus-icon-tag">+</span>
-            </button>
           </div>
         </header>
+
+        {error && <div className="error-message">{error}</div>}
+        {loading && <div className="loading-message">Carregando...</div>}
 
         <div className="pessoas-list">
           {currentPessoas.map((pessoa) => (
             <div key={pessoa.id} className="pessoa-item">
               <div className="pessoa-info">
-                <span className="pessoa-nome">
-                  {pessoa.nome} {pessoa.sobrenome}
-                </span>
+                <span className="pessoa-nome">{pessoa.nome}</span>
               </div>
               <div className="pessoa-actions">
                 <button 
@@ -228,16 +223,9 @@ function PessoasPorTag() {
               <input
                 type="text"
                 name="nome"
-                placeholder="[Nome] [Sobrenome]"
-                value={`${formData.nome} ${formData.sobrenome}`.trim()}
-                onChange={(e) => {
-                  const parts = e.target.value.split(' ');
-                  setFormData(prev => ({
-                    ...prev,
-                    nome: parts[0] || '',
-                    sobrenome: parts.slice(1).join(' ') || ''
-                  }));
-                }}
+                placeholder="Nome completo"
+                value={formData.nome}
+                onChange={handleFormChange}
                 className="form-input"
               />
             </div>
@@ -282,7 +270,7 @@ function PessoasPorTag() {
                   }
                 }}
               >
-                <option value="">Etiqueta</option>
+                <option value="">Adicionar Etiqueta</option>
                 {allTags.map((tag, idx) => (
                   <option key={idx} value={tag.name}>
                     {tag.name}
@@ -292,7 +280,7 @@ function PessoasPorTag() {
             </div>
 
             <div className="form-tags">
-              {formData.etiquetas.map((tag, idx) => {
+              {formData.tags.map((tag, idx) => {
                 const tagInfo = allTags.find(t => t.name === tag);
                 return (
                   <div 

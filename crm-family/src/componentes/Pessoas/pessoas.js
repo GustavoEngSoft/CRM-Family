@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { PessoasAPI } from '../../services/api';
 import MenuLateral from '../menuLateral/menuLateral';
 import './pessoas.css';
 
@@ -7,13 +8,26 @@ function Pessoas() {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTag, setSelectedTag] = useState(null);
+  const [pessoas, setPessoas] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [showModal, setShowModal] = useState(false);
+  const [formData, setFormData] = useState({
+    nome: '',
+    email: '',
+    telefone: '',
+    tags: [],
+    observacoes: ''
+  });
+  const [saving, setSaving] = useState(false);
 
+  // Tags estáticas - podem ser movidas para o banco depois
   const categories = [
-    { name: 'Líderes', count: 28, change: '+2 no mês', color: '#d95d39', icon: '★' },
-    { name: 'Obreiros', count: 53, change: '+2 no mês', color: '#5a7fdb', icon: '♥' },
-    { name: 'Voluntários', count: 176, change: '+9 no mês', color: '#4caf50', icon: '⚒' },
-    { name: 'Membros', count: 2184, change: '+20 no mês', color: '#26a69a', icon: '👤' },
-    { name: 'Visitantes', count: 242, change: '+27 no mês', color: '#8e44ad', icon: '◆' }
+    { name: 'Líderes', count: 0, change: '+2 no mês', color: '#d95d39', icon: '★', tag: 'lideres' },
+    { name: 'Obreiros', count: 0, change: '+2 no mês', color: '#5a7fdb', icon: '♥', tag: 'obreiros' },
+    { name: 'Voluntários', count: 0, change: '+9 no mês', color: '#4caf50', icon: '⚒', tag: 'voluntarios' },
+    { name: 'Membros', count: 0, change: '+20 no mês', color: '#26a69a', icon: '👤', tag: 'membros' },
+    { name: 'Visitantes', count: 0, change: '+27 no mês', color: '#8e44ad', icon: '◆', tag: 'visitantes' }
   ];
 
   const tags = [
@@ -27,8 +41,92 @@ function Pessoas() {
     { name: 'Membros', color: '#6d4c41', slug: 'membros' }
   ];
 
+  useEffect(() => {
+    loadPessoas();
+  }, []);
+
+  const loadPessoas = async () => {
+    try {
+      setLoading(true);
+      const response = await PessoasAPI.list(1, 1000);
+      setPessoas(response.data || []);
+      setError('');
+    } catch (err) {
+      setError('Erro ao carregar pessoas: ' + err.message);
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleTagClick = (slug) => {
     navigate(`/tag/${slug}`);
+  };
+
+  // Calcular contagens reais das tags
+  const getTagCount = (tagName) => {
+    return pessoas.filter(p => 
+      p.tags && p.tags.some(t => t.toLowerCase() === tagName.toLowerCase())
+    ).length;
+  };
+
+  const handleOpenModal = () => {
+    setFormData({
+      nome: '',
+      email: '',
+      telefone: '',
+      tags: [],
+      observacoes: ''
+    });
+    setShowModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setFormData({
+      nome: '',
+      email: '',
+      telefone: '',
+      tags: [],
+      observacoes: ''
+    });
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleTagToggle = (tagName) => {
+    setFormData(prev => ({
+      ...prev,
+      tags: prev.tags.includes(tagName)
+        ? prev.tags.filter(t => t !== tagName)
+        : [...prev.tags, tagName]
+    }));
+  };
+
+  const handleSave = async () => {
+    if (!formData.nome.trim()) {
+      alert('Por favor, preencha o nome');
+      return;
+    }
+
+    try {
+      setSaving(true);
+      await PessoasAPI.create(formData);
+      await loadPessoas(); // Recarregar lista
+      handleCloseModal();
+      alert('Pessoa adicionada com sucesso!');
+    } catch (err) {
+      alert('Erro ao salvar: ' + err.message);
+      console.error(err);
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -39,6 +137,8 @@ function Pessoas() {
           <h1 className="pessoas-title">Categorias/Tags</h1>
         </header>
 
+        {error && <div className="error-message">{error}</div>}
+
         <div className="categorias-section">
           <h2 className="section-title">Categorias</h2>
           <div className="categorias-grid">
@@ -47,12 +147,15 @@ function Pessoas() {
                 key={index} 
                 className="categoria-card"
                 style={{ background: cat.color }}
+                onClick={() => handleTagClick(cat.tag)}
               >
                 <div className="categoria-header">
                   <span className="categoria-icon">{cat.icon}</span>
                   <span className="categoria-name">{cat.name}</span>
                 </div>
-                <div className="categoria-count">{cat.count.toLocaleString('pt-BR')}</div>
+                <div className="categoria-count">
+                  {loading ? '...' : getTagCount(cat.name).toLocaleString('pt-BR')}
+                </div>
                 <div className="categoria-change">
                   <span className="change-icon"></span> {cat.change}
                 </div>
@@ -75,8 +178,8 @@ function Pessoas() {
                 />
                 <span className="search-icon">🔍</span>
               </div>
-              <button className="nova-tag-btn">
-                Nova Tag <span className="plus-icon">+</span>
+              <button className="nova-tag-btn" onClick={handleOpenModal}>
+                Adicionar Membro <span className="plus-icon">+</span>
               </button>
             </div>
           </div>
@@ -110,6 +213,100 @@ function Pessoas() {
             ))}
           </div>
         </div>
+
+        {showModal && (
+          <div className="modal-overlay" onClick={handleCloseModal}>
+            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-header">
+                <h2>Adicionar Novo Membro</h2>
+                <button className="modal-close" onClick={handleCloseModal}>×</button>
+              </div>
+              
+              <div className="modal-body">
+                <div className="form-group">
+                  <label>Nome *</label>
+                  <input
+                    type="text"
+                    name="nome"
+                    value={formData.nome}
+                    onChange={handleInputChange}
+                    placeholder="Nome completo"
+                    className="form-input"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Email</label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    placeholder="exemplo@email.com"
+                    className="form-input"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Telefone</label>
+                  <input
+                    type="tel"
+                    name="telefone"
+                    value={formData.telefone}
+                    onChange={handleInputChange}
+                    placeholder="(00) 00000-0000"
+                    className="form-input"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Tags</label>
+                  <div className="tags-select">
+                    {tags.map((tag, index) => (
+                      <div
+                        key={index}
+                        className={`tag-checkbox ${formData.tags.includes(tag.name) ? 'selected' : ''}`}
+                        onClick={() => handleTagToggle(tag.name)}
+                      >
+                        <span
+                          className="tag-color-dot"
+                          style={{ background: tag.color }}
+                        ></span>
+                        <span>{tag.name}</span>
+                        {formData.tags.includes(tag.name) && <span className="check-icon">✓</span>}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label>Observações</label>
+                  <textarea
+                    name="observacoes"
+                    value={formData.observacoes}
+                    onChange={handleInputChange}
+                    placeholder="Informações adicionais..."
+                    className="form-textarea"
+                    rows="4"
+                  />
+                </div>
+              </div>
+
+              <div className="modal-footer">
+                <button className="btn-cancel" onClick={handleCloseModal}>
+                  Cancelar
+                </button>
+                <button 
+                  className="btn-save" 
+                  onClick={handleSave}
+                  disabled={saving}
+                >
+                  {saving ? 'Salvando...' : 'Salvar'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

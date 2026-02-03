@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 import './menuLateral.css';
+import './user-info.css';
 
 function MenuLateral() {
   const navigate = useNavigate();
+  const { logout, user } = useAuth();
   const [pessoasOpen, setPessoasOpen] = useState(false);
   const [comunicacaoOpen, setComunicacaoOpen] = useState(false);
   const [relatoriosOpen, setRelatoriosOpen] = useState(false);
@@ -14,6 +17,7 @@ function MenuLateral() {
 
   const handleLogout = () => {
     if (window.confirm('Deseja sair da aplicação?')) {
+      logout();
       navigate('/');
     }
   };
@@ -23,6 +27,13 @@ function MenuLateral() {
       <div className="menu-logo">
         <img src="/logoIgreja.png" alt="Logo" className="menu-logo-img" />
       </div>
+
+      {user && (
+        <div className="menu-user-info">
+          <p className="user-name">{user.nome}</p>
+          <p className="user-email">{user.email}</p>
+        </div>
+      )}
 
       <nav className="menu-nav">
         <div className="menu-item">
@@ -188,6 +199,7 @@ function MenuLateral() {
         <div 
           className="menu-item-header"
           onClick={handleLogout}
+          style={{ cursor: 'pointer' }}
         >
           <span className="menu-icon">🚪</span>
           <span className="menu-text">Logout</span>

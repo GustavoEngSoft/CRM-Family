@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import MenuLateral from '../menuLateral/menuLateral';
+import { RelatoriosAPI } from '../../services/api';
 import './relatorios.css';
 
 function Relatorios() {
@@ -8,42 +9,62 @@ function Relatorios() {
   const [searchParams] = useSearchParams();
   const tabParam = searchParams.get('tab') || 'membros';
   const [activeTab, setActiveTab] = useState(tabParam);
+  const [loading, setLoading] = useState(true);
+
+  const [membros, setMembros] = useState([]);
+  const [visitantes, setVisitantes] = useState([]);
+  const [obreiros, setObreiros] = useState([]);
+  const [acompanhamento, setAcompanhamento] = useState([]);
+  const [mensagens, setMensagens] = useState([]);
 
   useEffect(() => {
     setActiveTab(tabParam);
   }, [tabParam]);
 
-  const [membros] = useState([
-    { id: 1, nome: 'João Silva', email: 'joao@email.com', telefone: '(11) 98765-4321', dataIngresso: '15/01/2023', status: 'Ativo' },
-    { id: 2, nome: 'Maria Santos', email: 'maria@email.com', telefone: '(11) 97654-3210', dataIngresso: '22/03/2023', status: 'Ativo' },
-    { id: 3, nome: 'Pedro Oliveira', email: 'pedro@email.com', telefone: '(11) 96543-2109', dataIngresso: '10/06/2023', status: 'Ativo' },
-    { id: 4, nome: 'Ana Costa', email: 'ana@email.com', telefone: '(11) 95432-1098', dataIngresso: '05/02/2024', status: 'Inativo' }
-  ]);
+  useEffect(() => {
+    loadData();
+  }, []);
 
-  const [visitantes] = useState([
-    { id: 1, nome: 'Lucas Alves', email: 'lucas@email.com', telefone: '(11) 94321-0987', dataVisita: '01/02/2026', convertido: 'Não' },
-    { id: 2, nome: 'Fernanda Lima', email: 'fernanda@email.com', telefone: '(11) 93210-9876', dataVisita: '02/02/2026', convertido: 'Sim' },
-    { id: 3, nome: 'Rafael Gomes', email: 'rafael@email.com', telefone: '(11) 92109-8765', dataVisita: '28/01/2026', convertido: 'Não' }
-  ]);
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      const [
+        membrosData,
+        visitantesData,
+        obreirosData,
+        acompanhamentoData,
+        mensagensData
+      ] = await Promise.all([
+        RelatoriosAPI.getMembros(),
+        RelatoriosAPI.getVisitantes(),
+        RelatoriosAPI.getObreiros(),
+        RelatoriosAPI.getAcompanhamentos(),
+        RelatoriosAPI.getComunicacoes()
+      ]);
 
-  const [obreiros] = useState([
-    { id: 1, nome: 'João Silva', funcao: 'Pastor', email: 'joao@email.com', telefone: '(11) 98765-4321', dataInicioMinisterio: '15/01/2020', status: 'Ativo' },
-    { id: 2, nome: 'Maria Santos', funcao: 'Diácona', email: 'maria@email.com', telefone: '(11) 97654-3210', dataInicioMinisterio: '22/03/2021', status: 'Ativo' },
-    { id: 3, nome: 'Pedro Oliveira', funcao: 'Cooperador', email: 'pedro@email.com', telefone: '(11) 96543-2109', dataInicioMinisterio: '10/06/2022', status: 'Ativo' },
-    { id: 4, nome: 'Ana Costa', funcao: 'Evangelista', email: 'ana@email.com', telefone: '(11) 95432-1098', dataInicioMinisterio: '05/02/2024', status: 'Inativo' }
-  ]);
+      setMembros(membrosData.data || []);
+      setVisitantes(visitantesData.data || []);
+      setObreiros(obreirosData.data || []);
+      setAcompanhamento(acompanhamentoData.data || []);
+      setMensagens(mensagensData.data || []);
+    } catch (err) {
+      console.error('Erro ao carregar relatórios:', err);
+      alert('Erro ao carregar dados: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const [acompanhamento] = useState([
-    { id: 1, nome: 'Integração de novos membros', status: 'Concluído', dataInicio: '10/01/2026', dataFim: '31/01/2026', responsavel: 'João Silva' },
-    { id: 2, nome: 'Preparação do batismo', status: 'Em andamento', dataInicio: '01/02/2026', dataFim: '28/02/2026', responsavel: 'Maria Santos' },
-    { id: 3, nome: 'Treinamento de líderes', status: 'Pendente', dataInicio: '15/02/2026', dataFim: '15/03/2026', responsavel: 'Pedro Oliveira' }
-  ]);
-
-  const [mensagens] = useState([
-    { id: 1, tipo: 'SMS', destinatarios: 45, dataEnvio: '01/02/2026', assunto: 'Convite para reunião', enviados: 45, lidos: 38 },
-    { id: 2, tipo: 'Email', destinatarios: 78, dataEnvio: '31/01/2026', assunto: 'Boletim semanal', enviados: 78, lidos: 62 },
-    { id: 3, tipo: 'WhatsApp', destinatarios: 52, dataEnvio: '02/02/2026', assunto: 'Lembrança de culto', enviados: 52, lidos: 51 }
-  ]);
+  const formatDate = (dateString) => {
+    if (!dateString) return '-';
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return '-';
+    return date.toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
+  };
 
   const handleExport = () => {
     alert('Funcionalidade de exportar em desenvolvimento!');
@@ -107,82 +128,94 @@ function Relatorios() {
         </div>
 
         <div className="relatorios-content-area">
-          {activeTab === 'membros' && (
-            <div className="tab-content">
-              <div className="content-header">
-                <h2>Relatório de Membros</h2>
-                <button className="btn-export" onClick={() => downloadCSV(membros, 'relatorio_membros.csv')}>
-                  📥 Baixar
-                </button>
-              </div>
-              <div className="stats-grid">
-                <div className="stat-card">
-                  <div className="stat-value">4</div>
-                  <div className="stat-label">Total de Membros</div>
+          {loading ? (
+            <div className="loading-message">Carregando dados...</div>
+          ) : (
+            <>
+              {activeTab === 'membros' && (
+                <div className="tab-content">
+                  <div className="content-header">
+                    <h2>Relatório de Membros</h2>
+                    <button className="btn-export" onClick={() => downloadCSV(membros, 'relatorio_membros.csv')}>
+                      📥 Baixar
+                    </button>
+                  </div>
+                  <div className="stats-grid">
+                    <div className="stat-card">
+                      <div className="stat-value">{membros.length}</div>
+                      <div className="stat-label">Total de Membros</div>
+                    </div>
+                    <div className="stat-card">
+                      <div className="stat-value">{membros.filter(m => m.ativo).length}</div>
+                      <div className="stat-label">Membros Ativos</div>
+                    </div>
+                    <div className="stat-card">
+                      <div className="stat-value">{membros.filter(m => !m.ativo).length}</div>
+                      <div className="stat-label">Membros Inativos</div>
+                    </div>
+                    <div className="stat-card">
+                      <div className="stat-value">
+                        {membros.length > 0 ? Math.round((membros.filter(m => m.ativo).length / membros.length) * 100) : 0}%
+                      </div>
+                      <div className="stat-label">Taxa de Atividade</div>
+                    </div>
+                  </div>
+                  <div className="table-container">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>Nome</th>
+                          <th>Email</th>
+                          <th>Telefone</th>
+                          <th>Data de Cadastro</th>
+                          <th>Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {membros.length === 0 ? (
+                          <tr><td colSpan="5" style={{textAlign: 'center'}}>Nenhum membro encontrado</td></tr>
+                        ) : (
+                          membros.map(membro => (
+                            <tr key={membro.id}>
+                              <td>{membro.nome}</td>
+                              <td>{membro.email || '-'}</td>
+                              <td>{membro.telefone || '-'}</td>
+                              <td>{formatDate(membro.created_at)}</td>
+                              <td><span className={`status ${membro.ativo ? 'ativo' : 'inativo'}`}>{membro.ativo ? 'Ativo' : 'Inativo'}</span></td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
-                <div className="stat-card">
-                  <div className="stat-value">3</div>
-                  <div className="stat-label">Membros Ativos</div>
-                </div>
-                <div className="stat-card">
-                  <div className="stat-value">1</div>
-                  <div className="stat-label">Membros Inativos</div>
-                </div>
-                <div className="stat-card">
-                  <div className="stat-value">75%</div>
-                  <div className="stat-label">Taxa de Atividade</div>
-                </div>
-              </div>
-              <div className="table-container">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Nome</th>
-                      <th>Email</th>
-                      <th>Telefone</th>
-                      <th>Data de Ingresso</th>
-                      <th>Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {membros.map(membro => (
-                      <tr key={membro.id}>
-                        <td>{membro.nome}</td>
-                        <td>{membro.email}</td>
-                        <td>{membro.telefone}</td>
-                        <td>{membro.dataIngresso}</td>
-                        <td><span className={`status ${membro.status.toLowerCase()}`}>{membro.status}</span></td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
+              )}
 
-          {activeTab === 'visitantes' && (
-            <div className="tab-content">
-              <div className="content-header">
-                <h2>Relatório de Visitantes</h2>
-                <button className="btn-export" onClick={() => downloadCSV(visitantes, 'relatorio_visitantes.csv')}>
-                  📥 Baixar
-                </button>
-              </div>
+              {activeTab === 'visitantes' && (
+                <div className="tab-content">
+                  <div className="content-header">
+                    <h2>Relatório de Visitantes</h2>
+                    <button className="btn-export" onClick={() => downloadCSV(visitantes, 'relatorio_visitantes.csv')}>
+                      📥 Baixar
+                    </button>
+                  </div>
               <div className="stats-grid">
                 <div className="stat-card">
-                  <div className="stat-value">3</div>
+                  <div className="stat-value">{visitantes.length}</div>
                   <div className="stat-label">Total de Visitantes</div>
                 </div>
                 <div className="stat-card">
-                  <div className="stat-value">1</div>
+                  <div className="stat-value">{visitantes.filter(v => v.tags?.includes('convertido')).length}</div>
                   <div className="stat-label">Convertidos</div>
                 </div>
                 <div className="stat-card">
-                  <div className="stat-value">2</div>
+                  <div className="stat-value">{visitantes.filter(v => !v.tags?.includes('convertido')).length}</div>
                   <div className="stat-label">Não Convertidos</div>
                 </div>
                 <div className="stat-card">
-                  <div className="stat-value">33%</div>
+                  <div className="stat-value">
+                    {visitantes.length > 0 ? Math.round((visitantes.filter(v => v.tags?.includes('convertido')).length / visitantes.length) * 100) : 0}%
+                  </div>
                   <div className="stat-label">Taxa de Conversão</div>
                 </div>
               </div>
@@ -193,20 +226,26 @@ function Relatorios() {
                       <th>Nome</th>
                       <th>Email</th>
                       <th>Telefone</th>
-                      <th>Data da Visita</th>
-                      <th>Convertido</th>
+                      <th>Data de Cadastro</th>
+                      <th>Status</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {visitantes.map(visitante => (
-                      <tr key={visitante.id}>
-                        <td>{visitante.nome}</td>
-                        <td>{visitante.email}</td>
-                        <td>{visitante.telefone}</td>
-                        <td>{visitante.dataVisita}</td>
-                        <td><span className={`status ${visitante.convertido.toLowerCase()}`}>{visitante.convertido}</span></td>
-                      </tr>
-                    ))}
+                    {visitantes.length === 0 ? (
+                      <tr><td colSpan="5" style={{textAlign: 'center'}}>Nenhum visitante encontrado</td></tr>
+                    ) : (
+                      visitantes.map(visitante => (
+                        <tr key={visitante.id}>
+                          <td>{visitante.nome}</td>
+                          <td>{visitante.email || '-'}</td>
+                          <td>{visitante.telefone || '-'}</td>
+                          <td>{formatDate(visitante.created_at)}</td>
+                          <td><span className={`status ${visitante.tags?.includes('convertido') ? 'ativo' : 'inativo'}`}>
+                            {visitante.tags?.includes('convertido') ? 'Convertido' : 'Não Convertido'}
+                          </span></td>
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -223,19 +262,21 @@ function Relatorios() {
               </div>
               <div className="stats-grid">
                 <div className="stat-card">
-                  <div className="stat-value">4</div>
+                  <div className="stat-value">{obreiros.length}</div>
                   <div className="stat-label">Total de Obreiros</div>
                 </div>
                 <div className="stat-card">
-                  <div className="stat-value">3</div>
+                  <div className="stat-value">{obreiros.filter(o => o.ativo).length}</div>
                   <div className="stat-label">Obreiros Ativos</div>
                 </div>
                 <div className="stat-card">
-                  <div className="stat-value">1</div>
+                  <div className="stat-value">{obreiros.filter(o => !o.ativo).length}</div>
                   <div className="stat-label">Obreiros Inativos</div>
                 </div>
                 <div className="stat-card">
-                  <div className="stat-value">75%</div>
+                  <div className="stat-value">
+                    {obreiros.length > 0 ? Math.round((obreiros.filter(o => o.ativo).length / obreiros.length) * 100) : 0}%
+                  </div>
                   <div className="stat-label">Taxa de Atividade</div>
                 </div>
               </div>
@@ -244,24 +285,28 @@ function Relatorios() {
                   <thead>
                     <tr>
                       <th>Nome</th>
-                      <th>Função</th>
                       <th>Email</th>
                       <th>Telefone</th>
-                      <th>Data de Início no Ministério</th>
+                      <th>Tags</th>
+                      <th>Data de Cadastro</th>
                       <th>Status</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {obreiros.map(obreiro => (
-                      <tr key={obreiro.id}>
-                        <td>{obreiro.nome}</td>
-                        <td>{obreiro.funcao}</td>
-                        <td>{obreiro.email}</td>
-                        <td>{obreiro.telefone}</td>
-                        <td>{obreiro.dataInicioMinisterio}</td>
-                        <td><span className={`status ${obreiro.status.toLowerCase()}`}>{obreiro.status}</span></td>
-                      </tr>
-                    ))}
+                    {obreiros.length === 0 ? (
+                      <tr><td colSpan="6" style={{textAlign: 'center'}}>Nenhum obreiro encontrado</td></tr>
+                    ) : (
+                      obreiros.map(obreiro => (
+                        <tr key={obreiro.id}>
+                          <td>{obreiro.nome}</td>
+                          <td>{obreiro.email || '-'}</td>
+                          <td>{obreiro.telefone || '-'}</td>
+                          <td>{obreiro.tags?.join(', ') || '-'}</td>
+                          <td>{formatDate(obreiro.created_at)}</td>
+                          <td><span className={`status ${obreiro.ativo ? 'ativo' : 'inativo'}`}>{obreiro.ativo ? 'Ativo' : 'Inativo'}</span></td>
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -278,19 +323,19 @@ function Relatorios() {
               </div>
               <div className="stats-grid">
                 <div className="stat-card">
-                  <div className="stat-value">3</div>
+                  <div className="stat-value">{acompanhamento.length}</div>
                   <div className="stat-label">Total de Tarefas</div>
                 </div>
                 <div className="stat-card">
-                  <div className="stat-value">1</div>
+                  <div className="stat-value">{acompanhamento.filter(a => a.status === 'fechado').length}</div>
                   <div className="stat-label">Concluídas</div>
                 </div>
                 <div className="stat-card">
-                  <div className="stat-value">1</div>
+                  <div className="stat-value">{acompanhamento.filter(a => a.status === 'em_progresso').length}</div>
                   <div className="stat-label">Em Andamento</div>
                 </div>
                 <div className="stat-card">
-                  <div className="stat-value">1</div>
+                  <div className="stat-value">{acompanhamento.filter(a => a.status === 'aberto').length}</div>
                   <div className="stat-label">Pendentes</div>
                 </div>
               </div>
@@ -298,23 +343,29 @@ function Relatorios() {
                 <table>
                   <thead>
                     <tr>
-                      <th>Tarefa</th>
+                      <th>Título</th>
                       <th>Status</th>
+                      <th>Prioridade</th>
                       <th>Data Início</th>
                       <th>Data Fim</th>
                       <th>Responsável</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {acompanhamento.map(item => (
-                      <tr key={item.id}>
-                        <td>{item.nome}</td>
-                        <td><span className={`status ${item.status.toLowerCase().replace(' ', '-')}`}>{item.status}</span></td>
-                        <td>{item.dataInicio}</td>
-                        <td>{item.dataFim}</td>
-                        <td>{item.responsavel}</td>
-                      </tr>
-                    ))}
+                    {acompanhamento.length === 0 ? (
+                      <tr><td colSpan="6" style={{textAlign: 'center'}}>Nenhum acompanhamento encontrado</td></tr>
+                    ) : (
+                      acompanhamento.map(item => (
+                        <tr key={item.id}>
+                          <td>{item.titulo}</td>
+                          <td><span className={`status ${item.status?.toLowerCase().replace('_', '-')}`}>{item.status}</span></td>
+                          <td>{item.prioridade || '-'}</td>
+                          <td>{formatDate(item.data_inicio)}</td>
+                          <td>{formatDate(item.data_fim)}</td>
+                          <td>{item.responsavel || '-'}</td>
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -331,20 +382,20 @@ function Relatorios() {
               </div>
               <div className="stats-grid">
                 <div className="stat-card">
-                  <div className="stat-value">3</div>
-                  <div className="stat-label">Campanhas Enviadas</div>
+                  <div className="stat-value">{mensagens.length}</div>
+                  <div className="stat-label">Total de Mensagens</div>
                 </div>
                 <div className="stat-card">
-                  <div className="stat-value">175</div>
-                  <div className="stat-label">Total Enviados</div>
+                  <div className="stat-value">{mensagens.filter(m => m.status === 'enviado').length}</div>
+                  <div className="stat-label">Enviadas</div>
                 </div>
                 <div className="stat-card">
-                  <div className="stat-value">151</div>
-                  <div className="stat-label">Total Lidos</div>
+                  <div className="stat-value">{mensagens.filter(m => m.tipo === 'email').length}</div>
+                  <div className="stat-label">Emails</div>
                 </div>
                 <div className="stat-card">
-                  <div className="stat-value">86%</div>
-                  <div className="stat-label">Taxa de Leitura</div>
+                  <div className="stat-value">{mensagens.filter(m => m.tipo === 'whatsapp').length}</div>
+                  <div className="stat-label">WhatsApp</div>
                 </div>
               </div>
               <div className="table-container">
@@ -354,22 +405,22 @@ function Relatorios() {
                       <th>Tipo</th>
                       <th>Assunto</th>
                       <th>Data de Envio</th>
-                      <th>Destinatários</th>
-                      <th>Enviados</th>
-                      <th>Lidos</th>
+                      <th>Status</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {mensagens.map(msg => (
-                      <tr key={msg.id}>
-                        <td>{msg.tipo}</td>
-                        <td>{msg.assunto}</td>
-                        <td>{msg.dataEnvio}</td>
-                        <td>{msg.destinatarios}</td>
-                        <td>{msg.enviados}</td>
-                        <td>{msg.lidos}</td>
-                      </tr>
-                    ))}
+                    {mensagens.length === 0 ? (
+                      <tr><td colSpan="4" style={{textAlign: 'center'}}>Nenhuma mensagem encontrada</td></tr>
+                    ) : (
+                      mensagens.map(msg => (
+                        <tr key={msg.id}>
+                          <td>{msg.tipo === 'email' ? '📧 Email' : '💬 WhatsApp'}</td>
+                          <td>{msg.assunto || msg.mensagem?.substring(0, 50) || '-'}</td>
+                          <td>{formatDate(msg.data_comunicacao)}</td>
+                          <td><span className={`status ${msg.status}`}>{msg.status}</span></td>
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -417,6 +468,8 @@ function Relatorios() {
                 </div>
               </div>
             </div>
+          )}
+            </>
           )}
         </div>
       </div>
