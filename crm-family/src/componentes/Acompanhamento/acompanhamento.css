@@ -1,0 +1,371 @@
+.acompanhamento-container {
+	display: flex;
+	min-height: 100vh;
+	background: #f6f6f7;
+}
+
+.acompanhamento-content {
+	flex: 1;
+	padding: 24px 32px;
+}
+
+.acompanhamento-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 24px;
+}
+
+.acompanhamento-title {
+	font-size: 32px;
+	font-weight: 700;
+	color: #ff7a45;
+	margin: 0;
+	font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.acompanhamento-actions {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+
+.acompanhamento-search {
+	position: relative;
+}
+
+.acompanhamento-search input {
+	height: 36px;
+	width: 220px;
+	border: 1px solid #e0e0e0;
+	border-radius: 10px;
+	padding: 0 36px 0 12px;
+	font-size: 13px;
+	outline: none;
+	background: #fff;
+}
+
+.acompanhamento-search .search-icon {
+	position: absolute;
+	right: 10px;
+	top: 50%;
+	transform: translateY(-50%);
+	font-size: 14px;
+	color: #999;
+}
+
+.acompanhamento-add {
+	height: 36px;
+	padding: 0 16px;
+	border: none;
+	border-radius: 16px;
+	background: #ff7a45;
+	color: #fff;
+	font-weight: 600;
+	font-size: 13px;
+	cursor: pointer;
+	box-shadow: 0 2px 6px rgba(255, 122, 69, 0.25);
+}
+
+.kanban-board {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(260px, 1fr));
+	gap: 18px;
+	align-items: start;
+}
+
+.kanban-column {
+	background: #f0f1f3;
+	border-radius: 12px;
+	padding: 14px;
+	min-height: 460px;
+	border: 1px solid #e2e2e2;
+}
+
+.kanban-column-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 12px;
+}
+
+.kanban-column-header h2 {
+	font-size: 14px;
+	font-weight: 700;
+	color: #333;
+	margin: 0;
+}
+
+.kanban-count {
+	background: #e0e0e0;
+	color: #666;
+	font-size: 12px;
+	font-weight: 600;
+	padding: 2px 8px;
+	border-radius: 10px;
+}
+
+.kanban-items {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.kanban-card {
+	background: #fff;
+	border-radius: 10px;
+	padding: 12px 14px;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+	border: 1px solid #ededed;
+	cursor: grab;
+	position: relative;
+}
+
+.kanban-card:active {
+	cursor: grabbing;
+}
+
+.kanban-card-actions {
+	position: absolute;
+	top: 8px;
+	right: 8px;
+	display: flex;
+	gap: 4px;
+	z-index: 10;
+}
+
+.kanban-card-view,
+.kanban-card-menu-btn {
+	background: none;
+	border: none;
+	font-size: 16px;
+	cursor: pointer;
+	padding: 4px;
+	opacity: 0.6;
+	transition: opacity 0.2s;
+}
+
+.kanban-card-view:hover,
+.kanban-card-menu-btn:hover {
+	opacity: 1;
+}
+
+.kanban-card-menu {
+	position: relative;
+}
+
+.kanban-menu-dropdown {
+	position: absolute;
+	top: 100%;
+	right: 0;
+	background: white;
+	border-radius: 8px;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+	padding: 6px;
+	min-width: 130px;
+	z-index: 100;
+	margin-top: 4px;
+}
+
+.menu-option {
+	width: 100%;
+	padding: 8px 12px;
+	border: none;
+	background: none;
+	text-align: left;
+	font-size: 13px;
+	cursor: pointer;
+	border-radius: 6px;
+	transition: background 0.2s;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	color: #333;
+}
+
+.menu-option:hover {
+	background: #f0f0f0;
+}
+
+.menu-option.delete:hover {
+	background: #fee;
+	color: #c00;
+}
+
+.kanban-card-title {
+	font-size: 13px;
+	color: #333;
+	font-weight: 600;
+	margin-bottom: 6px;
+}
+
+.kanban-card-date {
+	font-size: 11px;
+	color: #666;
+	margin-top: 6px;
+	display: flex;
+	align-items: center;
+	gap: 4px;
+}
+
+.kanban-card-responsible {
+	font-size: 11px;
+	color: #666;
+	margin-top: 6px;
+	display: flex;
+	align-items: center;
+	gap: 4px;
+}
+
+.modal-overlay-acomp {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background: rgba(0, 0, 0, 0.5);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	z-index: 1000;
+}
+
+.modal-content-acomp {
+	background: white;
+	border-radius: 16px;
+	padding: 32px;
+	max-width: 500px;
+	width: 90%;
+	box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+.modal-title-acomp {
+	font-size: 24px;
+	font-weight: 700;
+	color: #333;
+	margin: 0 0 24px 0;
+	text-align: center;
+	font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.form-group-acomp {
+	margin-bottom: 18px;
+}
+
+.form-label-acomp {
+	display: block;
+	font-size: 13px;
+	font-weight: 600;
+	color: #555;
+	margin-bottom: 6px;
+}
+
+.form-input-acomp,
+.form-textarea-acomp,
+.form-select-acomp {
+	width: 100%;
+	padding: 10px 14px;
+	border: 2px solid #e0e0e0;
+	border-radius: 8px;
+	font-size: 14px;
+	font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+	outline: none;
+	transition: border 0.2s;
+	box-sizing: border-box;
+}
+
+.form-input-acomp:focus,
+.form-textarea-acomp:focus,
+.form-select-acomp:focus {
+	border-color: #ff7a45;
+}
+
+.form-textarea-acomp {
+	resize: vertical;
+	min-height: 60px;
+}
+
+.modal-buttons-acomp {
+	display: flex;
+	gap: 12px;
+	justify-content: center;
+	margin-top: 24px;
+}
+
+.btn-salvar-acomp,
+.btn-fechar-acomp {
+	padding: 10px 28px;
+	border: none;
+	border-radius: 20px;
+	font-size: 14px;
+	font-weight: 600;
+	cursor: pointer;
+	transition: all 0.2s;
+	font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.btn-salvar-acomp {
+	background: #4caf50;
+	color: white;
+	box-shadow: 0 3px 10px rgba(76, 175, 80, 0.3);
+}
+
+.btn-salvar-acomp:hover {
+	background: #45a049;
+	box-shadow: 0 4px 14px rgba(76, 175, 80, 0.4);
+}
+
+.btn-fechar-acomp {
+	background: #e0e0e0;
+	color: #555;
+}
+
+.btn-fechar-acomp:hover {
+	background: #d0d0d0;
+}
+
+.modal-view {
+	max-width: 500px;
+}
+
+.view-group {
+	margin-bottom: 20px;
+}
+
+.view-label {
+	display: block;
+	font-size: 12px;
+	font-weight: 700;
+	color: #999;
+	text-transform: uppercase;
+	margin-bottom: 8px;
+	letter-spacing: 0.5px;
+}
+
+.view-text {
+	font-size: 15px;
+	color: #333;
+	margin: 0;
+	line-height: 1.5;
+}
+
+@media (max-width: 1100px) {
+	.kanban-board {
+		grid-template-columns: 1fr;
+	}
+}
+
+@media (max-width: 600px) {
+	.modal-content-acomp {
+		padding: 24px 20px;
+	}
+
+	.modal-buttons-acomp {
+		flex-direction: column;
+	}
+
+	.btn-salvar-acomp,
+	.btn-fechar-acomp {
+		width: 100%;
+	}
+}

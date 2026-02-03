@@ -1,0 +1,103 @@
+.menu-lateral {
+  width: 200px;
+  min-height: 100vh;
+  background: #ff7a45;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.menu-logo {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: #1a1a1a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 20px auto 30px;
+  overflow: hidden;
+}
+
+.menu-logo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.menu-logo-text {
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 18px;
+  letter-spacing: -1px;
+  text-transform: lowercase;
+}
+
+.menu-nav {
+  flex: 1;
+  padding: 0;
+}
+
+.menu-item {
+  margin-bottom: 0;
+}
+
+.menu-item-header {
+  display: flex;
+  align-items: center;
+  padding: 12px 20px;
+  color: #ffffff;
+  cursor: pointer;
+  transition: background 0.2s;
+  gap: 12px;
+}
+
+.menu-item-header:hover {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.menu-icon {
+  font-size: 18px;
+  width: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.menu-text {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.menu-submenu {
+  background: rgba(0, 0, 0, 0.15);
+  padding: 4px 0;
+}
+
+.menu-subitem {
+  padding: 8px 20px 8px 56px;
+  color: #ffffff;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.2s;
+  position: relative;
+}
+
+.menu-subitem:before {
+  content: '•';
+  position: absolute;
+  left: 44px;
+  font-size: 16px;
+}
+
+.menu-subitem:hover {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.menu-logout {
+  margin-top: auto;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 10px 0;
+}
+ 
