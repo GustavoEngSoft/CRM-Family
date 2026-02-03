@@ -1,33 +1,54 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import MenuLateral from '../menuLateral/menuLateral';
+import { DashboardAPI } from '../../services/api';
 import './dashboard.css';
 
 function Dashboard() {
-  const monthlyData = [
-    { month: 'Janeiro', value: 150 },
-    { month: 'Fevereiro', value: 120 },
-    { month: 'Março', value: 380 },
-    { month: 'Abril', value: 280 },
-    { month: 'Maio', value: 200 },
-    { month: 'Junho', value: 320 },
-    { month: 'Julho', value: 300 }
-  ];
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({
+    pessoasAtivas: 0,
+    membrosNovos: 0,
+    crescimentoMembros: 0,
+    mensagensEnviadas: 0,
+    visitantesRealizadas: 0,
+    crescimentoVisitantes: 0
+  });
+  const [monthlyData, setMonthlyData] = useState([]);
+  const [dailyData, setDailyData] = useState([]);
+  const [atividade, setAtividade] = useState({
+    total: 0,
+    ativas: 0,
+    percentual: 0
+  });
 
-  const dailyData = [
-    { date: '18/02/25', value: 200 },
-    { date: '19/02/25', value: 170 },
-    { date: '20/02/25', value: 160 },
-    { date: '21/02/25', value: 120 },
-    { date: '22/02/25', value: 110 },
-    { date: '23/02/25', value: 100 },
-    { date: '24/02/25', value: 110 },
-    { date: '25/02/25', value: 105 },
-    { date: '26/02/25', value: 90 },
-    { date: '27/02/25', value: 85 }
-  ];
+  useEffect(() => {
+    loadDashboardData();
+  }, []);
 
-  const maxValue = Math.max(...monthlyData.map(d => d.value));
-  const maxDaily = Math.max(...dailyData.map(d => d.value));
+  const loadDashboardData = async () => {
+    try {
+      setLoading(true);
+      const [statsData, crescimentoData, acompanhamentosData, atividadeData] = await Promise.all([
+        DashboardAPI.getStats(),
+        DashboardAPI.getCrescimentoMensal(),
+        DashboardAPI.getAcompanhamentosDiarios(),
+        DashboardAPI.getAtividade()
+      ]);
+
+      setStats(statsData);
+      setMonthlyData(crescimentoData || []);
+      setDailyData(acompanhamentosData || []);
+      setAtividade(atividadeData);
+    } catch (err) {
+      console.error('Erro ao carregar dashboard:', err);
+      alert('Erro ao carregar dados: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const maxValue = monthlyData.length > 0 ? Math.max(...monthlyData.map(d => d.value)) : 1;
+  const maxDaily = dailyData.length > 0 ? Math.max(...dailyData.map(d => d.value)) : 1;
 
   return (
     <div className="dashboard-container">
@@ -37,149 +58,167 @@ function Dashboard() {
           <h1 className="dashboard-title">Fam.Dash</h1>
         </header>
 
-        <div className="stats-cards">
-          <div className="stat-card stat-blue">
-            <div className="stat-label">Pessoas Ativas</div>
-            <div className="stat-value">500</div>
-            <div className="stat-change positive">↑ 100</div>
-          </div>
-          <div className="stat-card stat-purple">
-            <div className="stat-label">Membros Novos</div>
-            <div className="stat-value">100</div>
-            <div className="stat-change positive">↑ 20%</div>
-            <div className="stat-icon">💬</div>
-          </div>
-          <div className="stat-card stat-dark">
-            <div className="stat-label">Mensagens Enviadas</div>
-            <div className="stat-value">5.800</div>
-            <div className="stat-change positive">↑ 30%</div>
-            <div className="stat-icon">⚙️</div>
-          </div>
-          <div className="stat-card stat-orange">
-            <div className="stat-label">Visitas Realizadas</div>
-            <div className="stat-value">200</div>
-            <div className="stat-change positive">↑ 30%</div>
-            <div className="stat-icon">🏆</div>
-          </div>
-        </div>
-
-        <div className="charts-row">
-          <div className="chart-card">
-            <h3 className="chart-title">Pessoas Ativas (Últimos 30 dias)</h3>
-            <div className="gauge-chart">
-              <svg viewBox="0 0 200 120" className="gauge-svg">
-                <path
-                  d="M 20 100 A 80 80 0 0 1 180 100"
-                  fill="none"
-                  stroke="#e0e0e0"
-                  strokeWidth="20"
-                  strokeLinecap="round"
-                />
-                <path
-                  d="M 20 100 A 80 80 0 0 1 100 20"
-                  fill="none"
-                  stroke="#333"
-                  strokeWidth="20"
-                  strokeLinecap="round"
-                />
-                <text x="100" y="70" textAnchor="middle" className="gauge-label">Pessoas</text>
-                <text x="100" y="90" textAnchor="middle" className="gauge-value">250</text>
-              </svg>
-              <div className="gauge-labels">
-                <span className="gauge-min">0</span>
-                <span className="gauge-max">50%</span>
+        {loading ? (
+          <div className="loading-message">Carregando dados...</div>
+        ) : (
+          <>
+            <div className="stats-cards">
+              <div className="stat-card stat-blue">
+                <div className="stat-label">Pessoas Ativas</div>
+                <div className="stat-value">{stats.pessoasAtivas}</div>
+                <div className="stat-change positive">↑ {stats.membrosNovos}</div>
+              </div>
+              <div className="stat-card stat-purple">
+                <div className="stat-label">Membros Novos</div>
+                <div className="stat-value">{stats.membrosNovos}</div>
+                <div className={`stat-change ${stats.crescimentoMembros >= 0 ? 'positive' : 'negative'}`}>
+                  {stats.crescimentoMembros >= 0 ? '+' : ''}{stats.crescimentoMembros} no mês
+                </div>
+                <div className="stat-icon">💬</div>
+              </div>
+              <div className="stat-card stat-dark">
+                <div className="stat-label">Mensagens Enviadas</div>
+                <div className="stat-value">{stats.mensagensEnviadas}</div>
+                <div className="stat-change positive">↑ 30%</div>
+                <div className="stat-icon">⚙️</div>
+              </div>
+              <div className="stat-card stat-orange">
+                <div className="stat-label">Visitas Realizadas</div>
+                <div className="stat-value">{stats.visitantesRealizadas}</div>
+                <div className={`stat-change ${stats.crescimentoVisitantes >= 0 ? 'positive' : 'negative'}`}>
+                  {stats.crescimentoVisitantes >= 0 ? '+' : ''}{stats.crescimentoVisitantes} no mês
+                </div>
+                <div className="stat-icon">🏆</div>
               </div>
             </div>
-          </div>
 
-          <div className="chart-card">
-            <h3 className="chart-title">Crescimento mensal</h3>
-            <div className="line-chart">
-              <svg viewBox="0 0 400 200" className="line-svg">
-                <line x1="40" y1="0" x2="40" y2="160" stroke="#e0e0e0" strokeWidth="1" />
-                <line x1="40" y1="160" x2="400" y2="160" stroke="#e0e0e0" strokeWidth="1" />
-                
-                {[0, 100, 200, 300, 400].map((val, i) => (
-                  <g key={i}>
-                    <line x1="35" y1={160 - i * 40} x2="40" y2={160 - i * 40} stroke="#999" strokeWidth="1" />
-                    <text x="25" y={165 - i * 40} fontSize="10" fill="#999" textAnchor="end">{val}</text>
-                  </g>
-                ))}
+            <div className="charts-row">
+              <div className="chart-card">
+                <h3 className="chart-title">Pessoas Ativas (Últimos 30 dias)</h3>
+                <div className="gauge-chart">
+                  <svg viewBox="0 0 200 120" className="gauge-svg">
+                    <path
+                      d="M 20 100 A 80 80 0 0 1 180 100"
+                      fill="none"
+                      stroke="#e0e0e0"
+                      strokeWidth="20"
+                      strokeLinecap="round"
+                    />
+                    <path
+                      d={`M 20 100 A 80 80 0 ${atividade.percentual > 50 ? '1' : '0'} 1 ${20 + (160 * atividade.percentual / 100)} ${100 - Math.sin((Math.PI * atividade.percentual) / 100) * 80}`}
+                      fill="none"
+                      stroke="#333"
+                      strokeWidth="20"
+                      strokeLinecap="round"
+                    />
+                    <text x="100" y="70" textAnchor="middle" className="gauge-label">Pessoas</text>
+                    <text x="100" y="90" textAnchor="middle" className="gauge-value">{atividade.ativas}</text>
+                  </svg>
+                  <div className="gauge-labels">
+                    <span className="gauge-min">0</span>
+                    <span className="gauge-max">{atividade.percentual}%</span>
+                  </div>
+                </div>
+                  </div>
 
-                <polyline
-                  points={monthlyData.map((d, i) => 
-                    `${60 + i * 50},${160 - (d.value / maxValue) * 150}`
-                  ).join(' ')}
-                  fill="none"
-                  stroke="#9b6bff"
-                  strokeWidth="3"
-                />
-                
-                {monthlyData.map((d, i) => (
-                  <circle
-                    key={i}
-                    cx={60 + i * 50}
-                    cy={160 - (d.value / maxValue) * 150}
-                    r="4"
-                    fill="#9b6bff"
-                  />
-                ))}
+              <div className="chart-card">
+                <h3 className="chart-title">Crescimento mensal</h3>
+                <div className="line-chart">
+                  {monthlyData.length === 0 ? (
+                    <div style={{textAlign: 'center', padding: '40px'}}>Sem dados disponíveis</div>
+                  ) : (
+                    <svg viewBox="0 0 400 200" className="line-svg">
+                      <line x1="40" y1="0" x2="40" y2="160" stroke="#e0e0e0" strokeWidth="1" />
+                      <line x1="40" y1="160" x2="400" y2="160" stroke="#e0e0e0" strokeWidth="1" />
+                      
+                      {[0, Math.floor(maxValue/4), Math.floor(maxValue/2), Math.floor(maxValue*3/4), maxValue].map((val, i) => (
+                        <g key={i}>
+                          <line x1="35" y1={160 - i * 40} x2="40" y2={160 - i * 40} stroke="#999" strokeWidth="1" />
+                          <text x="25" y={165 - i * 40} fontSize="10" fill="#999" textAnchor="end">{val}</text>
+                        </g>
+                      ))}
 
-                {monthlyData.map((d, i) => (
-                  <text
-                    key={i}
-                    x={60 + i * 50}
-                    y="180"
-                    fontSize="9"
-                    fill="#999"
-                    textAnchor="middle"
-                  >
-                    {d.month.substring(0, 3)}
-                  </text>
-                ))}
-              </svg>
+                      <polyline
+                        points={monthlyData.map((d, i) => 
+                          `${60 + i * 50},${160 - (d.value / maxValue) * 150}`
+                        ).join(' ')}
+                        fill="none"
+                        stroke="#9b6bff"
+                        strokeWidth="3"
+                      />
+                      
+                      {monthlyData.map((d, i) => (
+                        <circle
+                          key={i}
+                          cx={60 + i * 50}
+                          cy={160 - (d.value / maxValue) * 150}
+                          r="4"
+                          fill="#9b6bff"
+                        />
+                      ))}
+
+                      {monthlyData.map((d, i) => (
+                        <text
+                          key={i}
+                          x={60 + i * 50}
+                          y="180"
+                          fontSize="9"
+                          fill="#999"
+                          textAnchor="middle"
+                        >
+                          {d.month.substring(0, 3)}
+                        </text>
+                      ))}
+                    </svg>
+                  )}
+                </div>
+              </div>
+                </div>
+
+            <div className="chart-card chart-full">
+              <h3 className="chart-title">Acompanhamentos por dia</h3>
+              <div className="bar-chart">
+                {dailyData.length === 0 ? (
+                  <div style={{textAlign: 'center', padding: '40px'}}>Sem dados disponíveis</div>
+                ) : (
+                  <svg viewBox="0 0 900 250" className="bar-svg">
+                    <line x1="40" y1="0" x2="40" y2="200" stroke="#e0e0e0" strokeWidth="1" />
+                    <line x1="40" y1="200" x2="900" y2="200" stroke="#e0e0e0" strokeWidth="1" />
+                    
+                    {[0, Math.floor(maxDaily/5), Math.floor(maxDaily*2/5), Math.floor(maxDaily*3/5), Math.floor(maxDaily*4/5), maxDaily].map((val, i) => (
+                      <g key={i}>
+                        <line x1="35" y1={200 - i * 40} x2="40" y2={200 - i * 40} stroke="#999" strokeWidth="1" />
+                        <text x="25" y={205 - i * 40} fontSize="12" fill="#999" textAnchor="end">{val}</text>
+                      </g>
+                    ))}
+
+                    {dailyData.map((d, i) => (
+                      <g key={i}>
+                        <rect
+                          x={70 + i * 85}
+                          y={200 - (d.value / maxDaily) * 180}
+                          width="50"
+                          height={(d.value / maxDaily) * 180}
+                          fill="#ff7a45"
+                          rx="4"
+                        />
+                        <text
+                          x={95 + i * 85}
+                          y="220"
+                          fontSize="11"
+                          fill="#999"
+                          textAnchor="middle"
+                        >
+                          {d.date}
+                        </text>
+                      </g>
+                    ))}
+                  </svg>
+                )}
+              </div>
             </div>
-          </div>
-        </div>
-
-        <div className="chart-card chart-full">
-          <h3 className="chart-title">Acompanhamentos por dia</h3>
-          <div className="bar-chart">
-            <svg viewBox="0 0 900 250" className="bar-svg">
-              <line x1="40" y1="0" x2="40" y2="200" stroke="#e0e0e0" strokeWidth="1" />
-              <line x1="40" y1="200" x2="900" y2="200" stroke="#e0e0e0" strokeWidth="1" />
-              
-              {[0, 50, 100, 150, 200, 250].map((val, i) => (
-                <g key={i}>
-                  <line x1="35" y1={200 - i * 40} x2="40" y2={200 - i * 40} stroke="#999" strokeWidth="1" />
-                  <text x="25" y={205 - i * 40} fontSize="12" fill="#999" textAnchor="end">{val}</text>
-                </g>
-              ))}
-
-              {dailyData.map((d, i) => (
-                <g key={i}>
-                  <rect
-                    x={70 + i * 85}
-                    y={200 - (d.value / maxDaily) * 180}
-                    width="50"
-                    height={(d.value / maxDaily) * 180}
-                    fill="#ff7a45"
-                    rx="4"
-                  />
-                  <text
-                    x={95 + i * 85}
-                    y="220"
-                    fontSize="11"
-                    fill="#999"
-                    textAnchor="middle"
-                  >
-                    {d.date}
-                  </text>
-                </g>
-              ))}
-            </svg>
-          </div>
-        </div>
+          </>
+        )}
       </div>
     </div>
   );

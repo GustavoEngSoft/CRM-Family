@@ -309,3 +309,42 @@ export const RelatoriosAPI = {
     return handleResponse(response);
   }
 };
+
+// ==================== DASHBOARD ====================
+
+export const DashboardAPI = {
+  getStats: async () => {
+    const response = await fetch(`${API_URL}/dashboard/stats`, {
+      headers: getHeaders()
+    });
+    return handleResponse(response);
+  },
+
+  getCategories: async () => {
+    const response = await fetch(`${API_URL}/dashboard/categories`, {
+      headers: getHeaders()
+    });
+    return handleResponse(response);
+  },
+
+  getCrescimentoMensal: async () => {
+    const response = await fetch(`${API_URL}/dashboard/crescimento-mensal`, {
+      headers: getHeaders()
+    });
+    return handleResponse(response);
+  },
+
+  getAcompanhamentosDiarios: async () => {
+    const response = await fetch(`${API_URL}/dashboard/acompanhamentos-diarios`, {
+      headers: getHeaders()
+    });
+    return handleResponse(response);
+  },
+
+  getAtividade: async () => {
+    const response = await fetch(`${API_URL}/dashboard/atividade`, {
+      headers: getHeaders()
+    });
+    return handleResponse(response);
+  }
+};

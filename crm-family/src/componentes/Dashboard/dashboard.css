@@ -54,6 +54,14 @@
   background: linear-gradient(135deg, #ffb366 0%, #ff9933 100%);
 }
 
+.stat-green {
+  background: linear-gradient(135deg, #52c77f 0%, #3aa363 100%);
+}
+
+.stat-teal {
+  background: linear-gradient(135deg, #16a79c 0%, #0f6d63 100%);
+}
+
 .stat-label {
   font-size: 13px;
   font-weight: 500;
