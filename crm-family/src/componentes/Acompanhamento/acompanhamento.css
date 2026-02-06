@@ -561,6 +561,32 @@
 	}
 }
 
+@media (max-width: 900px) {
+	.acompanhamento-container {
+		flex-direction: column;
+	}
+
+	.acompanhamento-content {
+		padding: 20px 22px;
+	}
+
+	.acompanhamento-header {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 12px;
+	}
+
+	.acompanhamento-actions {
+		width: 100%;
+		flex-wrap: wrap;
+	}
+
+	.acompanhamento-search,
+	.acompanhamento-search input {
+		width: 100%;
+	}
+}
+
 @media (max-width: 600px) {
 	.modal-content-acomp {
 		padding: 24px 20px;

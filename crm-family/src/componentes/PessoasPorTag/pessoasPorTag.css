@@ -258,6 +258,30 @@
   }
 }
 
+@media (max-width: 900px) {
+  .pessoas-tag-container {
+    flex-direction: column;
+  }
+
+  .pessoas-tag-content {
+    padding: 20px 22px;
+  }
+
+  .pessoas-tag-title {
+    font-size: 32px;
+  }
+}
+
+@media (max-width: 480px) {
+  .pessoas-tag-content {
+    padding: 16px;
+  }
+
+  .pessoas-tag-title {
+    font-size: 26px;
+  }
+}
+
 .modal-overlay {
   position: fixed;
   top: 0;

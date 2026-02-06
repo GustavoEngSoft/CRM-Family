@@ -271,6 +271,20 @@
   }
 }
 
+@media (max-width: 900px) {
+  .dashboard-container {
+    flex-direction: column;
+  }
+
+  .dashboard-content {
+    padding: 20px 22px;
+  }
+
+  .dashboard-title {
+    font-size: 32px;
+  }
+}
+
 @media (max-width: 768px) {
   .stats-cards {
     grid-template-columns: 1fr;
@@ -286,6 +300,14 @@
 }
 
 @media (max-width: 480px) {
+  .dashboard-content {
+    padding: 16px;
+  }
+
+  .dashboard-title {
+    font-size: 26px;
+  }
+
   .categories-cards {
     grid-template-columns: 1fr;
   }

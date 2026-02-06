@@ -100,4 +100,38 @@
   border-top: 1px solid rgba(255, 255, 255, 0.2);
   padding: 10px 0;
 }
+
+@media (max-width: 900px) {
+  .menu-lateral {
+    width: 100%;
+    min-height: auto;
+    padding-bottom: 6px;
+  }
+
+  .menu-logo {
+    width: 42px;
+    height: 42px;
+    margin: 12px auto 16px;
+  }
+
+  .menu-item-header {
+    padding: 10px 16px;
+  }
+
+  .menu-text {
+    font-size: 13px;
+  }
+
+  .menu-subitem {
+    padding: 8px 16px 8px 40px;
+  }
+
+  .menu-subitem:before {
+    left: 28px;
+  }
+
+  .menu-logout {
+    margin-top: 6px;
+  }
+}
  

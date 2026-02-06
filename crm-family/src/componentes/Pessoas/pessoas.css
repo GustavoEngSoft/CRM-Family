@@ -216,6 +216,20 @@
   }
 }
 
+@media (max-width: 900px) {
+  .pessoas-container {
+    flex-direction: column;
+  }
+
+  .pessoas-content {
+    padding: 20px 22px;
+  }
+
+  .pessoas-title {
+    font-size: 32px;
+  }
+}
+
 @media (max-width: 1024px) {
   .categorias-grid {
     grid-template-columns: repeat(2, 1fr);
@@ -249,6 +263,16 @@
   .nova-tag-btn {
     width: 100%;
     justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .pessoas-content {
+    padding: 16px;
+  }
+
+  .pessoas-title {
+    font-size: 26px;
   }
 }
 

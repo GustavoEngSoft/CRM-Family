@@ -1007,3 +1007,27 @@ tbody tr:hover {
     padding: 8px 12px;
   }
 }
+
+@media (max-width: 900px) {
+  .comunicacao-container {
+    flex-direction: column;
+  }
+
+  .comunicacao-content {
+    padding: 20px 22px;
+  }
+
+  .comunicacao-title {
+    font-size: 26px;
+  }
+}
+
+@media (max-width: 480px) {
+  .comunicacao-content {
+    padding: 16px;
+  }
+
+  .comunicacao-title {
+    font-size: 22px;
+  }
+}

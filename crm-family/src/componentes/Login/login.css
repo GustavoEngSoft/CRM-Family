@@ -96,3 +96,22 @@
 .login-forgot:hover {
 	text-decoration: underline;
 }
+
+@media (max-width: 480px) {
+	.login-card {
+		width: 92vw;
+		height: auto;
+		padding: 18px 0 24px;
+	}
+
+	.login-input {
+		width: 86%;
+		height: 34px;
+	}
+
+	.login-button {
+		width: 80%;
+		height: 36px;
+		margin-top: 34px;
+	}
+}

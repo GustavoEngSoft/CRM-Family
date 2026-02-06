@@ -388,3 +388,27 @@ tbody tr:hover {
     grid-template-columns: 1fr;
   }
 }
+
+@media (max-width: 900px) {
+  .relatorios-container {
+    flex-direction: column;
+  }
+
+  .relatorios-content {
+    padding: 20px 22px;
+  }
+
+  .relatorios-title {
+    font-size: 26px;
+  }
+}
+
+@media (max-width: 480px) {
+  .relatorios-content {
+    padding: 16px;
+  }
+
+  .relatorios-title {
+    font-size: 22px;
+  }
+}
