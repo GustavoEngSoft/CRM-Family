@@ -16,6 +16,7 @@ function Eventos() {
   const [inscricoes, setInscricoes] = useState([]);
   const [showModalEvento, setShowModalEvento] = useState(false);
   const [showModalInscricao, setShowModalInscricao] = useState(false);
+  const [buscaInscricao, setBuscaInscricao] = useState('');
 
   const [formEvento, setFormEvento] = useState({
     nome: '',
@@ -28,7 +29,7 @@ function Eventos() {
   const [formInscricao, setFormInscricao] = useState({
     nome: '',
     telefone: '',
-    endereco: '',
+    igreja: '',
     tipo: 'membro'
   });
 
@@ -107,7 +108,7 @@ function Eventos() {
 
   const handleCreateInscricao = async () => {
     try {
-      if (!formInscricao.nome || !formInscricao.telefone || !formInscricao.endereco) {
+      if (!formInscricao.nome || !formInscricao.telefone || !formInscricao.igreja) {
         alert('Preencha todos os campos obrigatórios');
         return;
       }
@@ -131,7 +132,7 @@ function Eventos() {
       const newInscricao = await response.json();
       setInscricoes([newInscricao, ...inscricoes]);
       setShowModalInscricao(false);
-      setFormInscricao({ nome: '', telefone: '', endereco: '', tipo: 'membro' });
+      setFormInscricao({ nome: '', telefone: '', igreja: '', tipo: 'membro' });
       alert('Inscrição realizada com sucesso!');
     } catch (err) {
       alert('Erro ao criar inscrição: ' + err.message);
@@ -179,6 +180,23 @@ function Eventos() {
   const formatarData = (data) => {
     return new Date(data).toLocaleDateString('pt-BR');
   };
+
+  const buscaNormalizada = buscaInscricao.trim().toLowerCase();
+  const inscricoesFiltradas = buscaNormalizada
+    ? inscricoes.filter((inscricao) => {
+        const nome = (inscricao.nome || '').toLowerCase();
+        const telefone = (inscricao.telefone || '').toLowerCase();
+        const igreja = (inscricao.igreja || '').toLowerCase();
+        const tipo = (inscricao.tipo || '').toLowerCase();
+
+        return (
+          nome.includes(buscaNormalizada) ||
+          telefone.includes(buscaNormalizada) ||
+          igreja.includes(buscaNormalizada) ||
+          tipo.includes(buscaNormalizada)
+        );
+      })
+    : inscricoes;
 
   return (
     <div className="eventos-container">
@@ -275,6 +293,15 @@ function Eventos() {
                     Visitantes: <strong>{inscricoes.filter(i => i.tipo === 'visitante').length}</strong>
                   </p>
                 </div>
+                <div className="inscricoes-search">
+                  <input
+                    type="text"
+                    value={buscaInscricao}
+                    onChange={(e) => setBuscaInscricao(e.target.value)}
+                    placeholder="Buscar inscrito..."
+                    aria-label="Buscar inscrito"
+                  />
+                </div>
                 <div className="inscricoes-buttons">
                   <button 
                     className="btn-primary"
@@ -294,6 +321,8 @@ function Eventos() {
 
               {inscricoes.length === 0 ? (
                 <p className="empty-message">Nenhuma inscrição neste evento</p>
+              ) : inscricoesFiltradas.length === 0 ? (
+                <p className="empty-message">Nenhum inscrito encontrado para a busca</p>
               ) : (
                 <div className="inscricoes-table">
                   <table>
@@ -301,18 +330,18 @@ function Eventos() {
                       <tr>
                         <th>Nome</th>
                         <th>Telefone</th>
-                        <th>Endereço</th>
+                        <th>Igreja</th>
                         <th>Tipo</th>
                         <th>Data da Inscrição</th>
                         <th>Ações</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {inscricoes.map(inscricao => (
+                      {inscricoesFiltradas.map(inscricao => (
                         <tr key={inscricao.id}>
                           <td>{inscricao.nome}</td>
                           <td>{inscricao.telefone}</td>
-                          <td>{inscricao.endereco}</td>
+                          <td>{inscricao.igreja}</td>
                           <td>
                             <span className={`badge-tipo ${inscricao.tipo}`}>
                               {inscricao.tipo === 'membro' ? '👤 Membro' : '👁️ Visitante'}
@@ -447,12 +476,12 @@ function Eventos() {
                 </div>
 
                 <div className="form-group">
-                  <label>Endereço *</label>
-                  <textarea
-                    value={formInscricao.endereco}
-                    onChange={(e) => setFormInscricao({ ...formInscricao, endereco: e.target.value })}
-                    placeholder="Rua, número, complemento..."
-                    rows="2"
+                  <label>É membro de alguma igreja? Se sim, qual? *</label>
+                  <input
+                    type="text"
+                    value={formInscricao.igreja}
+                    onChange={(e) => setFormInscricao({ ...formInscricao, igreja: e.target.value })}
+                    placeholder="Ex: Igreja Batista Central"
                     required
                   />
                 </div>

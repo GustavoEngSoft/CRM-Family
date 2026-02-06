@@ -141,11 +141,11 @@ export async function getInscricaoById(req, res) {
 
 export async function createInscricao(req, res) {
   try {
-    const { evento_id, nome, telefone, endereco, tipo } = req.body;
+    const { evento_id, nome, telefone, igreja, tipo } = req.body;
 
-    if (!evento_id || !nome || !telefone || !endereco || !tipo) {
+    if (!evento_id || !nome || !telefone || !igreja || !tipo) {
       return res.status(400).json({ 
-        error: 'Evento ID, nome, telefone, endereço e tipo são obrigatórios' 
+        error: 'Evento ID, nome, telefone, igreja e tipo são obrigatórios' 
       });
     }
 
@@ -155,10 +155,10 @@ export async function createInscricao(req, res) {
 
     const id = uuidv4();
     const result = await query(
-      `INSERT INTO inscricoes_eventos (id, evento_id, nome, telefone, endereco, tipo)
+      `INSERT INTO inscricoes_eventos (id, evento_id, nome, telefone, igreja, tipo)
        VALUES ($1, $2, $3, $4, $5, $6)
        RETURNING *`,
-      [id, evento_id, nome, telefone, endereco, tipo]
+      [id, evento_id, nome, telefone, igreja, tipo]
     );
 
     res.status(201).json(result.rows[0]);
@@ -170,7 +170,7 @@ export async function createInscricao(req, res) {
 export async function updateInscricao(req, res) {
   try {
     const { id } = req.params;
-    const { nome, telefone, endereco, tipo, ativo } = req.body;
+    const { nome, telefone, igreja, tipo, ativo } = req.body;
 
     if (tipo && tipo !== 'membro' && tipo !== 'visitante') {
       return res.status(400).json({ error: 'Tipo deve ser "membro" ou "visitante"' });
@@ -180,13 +180,13 @@ export async function updateInscricao(req, res) {
       `UPDATE inscricoes_eventos SET
         nome = COALESCE($2, nome),
         telefone = COALESCE($3, telefone),
-        endereco = COALESCE($4, endereco),
+        igreja = COALESCE($4, igreja),
         tipo = COALESCE($5, tipo),
         ativo = COALESCE($6, ativo),
         updated_at = CURRENT_TIMESTAMP
        WHERE id = $1
        RETURNING *`,
-      [id, nome, telefone, endereco, tipo, ativo]
+      [id, nome, telefone, igreja, tipo, ativo]
     );
 
     if (result.rows.length === 0) {

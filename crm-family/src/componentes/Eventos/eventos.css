@@ -224,6 +224,27 @@
   flex-wrap: wrap;
 }
 
+.inscricoes-search {
+  flex: 1;
+  min-width: 220px;
+}
+
+.inscricoes-search input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #bdc3c7;
+  border-radius: 5px;
+  font-size: 14px;
+  box-sizing: border-box;
+  background-color: #ffffff;
+}
+
+.inscricoes-search input:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.1);
+}
+
 /* TABELA DE INSCRIÇÕES */
 .inscricoes-table {
   overflow-x: auto;

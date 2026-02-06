@@ -95,7 +95,7 @@ CREATE TABLE IF NOT EXISTS inscricoes_eventos (
   evento_id UUID NOT NULL REFERENCES eventos(id) ON DELETE CASCADE,
   nome VARCHAR(255) NOT NULL,
   telefone VARCHAR(20) NOT NULL,
-  endereco TEXT NOT NULL,
+  igreja TEXT NOT NULL,
   tipo VARCHAR(50) NOT NULL, -- membro, visitante
   data_inscricao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   ativo BOOLEAN DEFAULT true,
