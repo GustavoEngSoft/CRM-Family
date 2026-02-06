@@ -5,13 +5,22 @@ dotenv.config();
 
 const { Pool } = pg;
 
-const pool = new Pool({
-  host: process.env.DB_HOST || 'localhost',
-  port: process.env.DB_PORT || 5432,
-  database: process.env.DB_NAME || 'crm_family',
-  user: process.env.DB_USER || 'crm_user',
-  password: process.env.DB_PASSWORD || 'crm_password_secure'
-});
+const hasDatabaseUrl = Boolean(process.env.DATABASE_URL);
+
+const pool = new Pool(
+  hasDatabaseUrl
+    ? {
+        connectionString: process.env.DATABASE_URL,
+        ssl: { rejectUnauthorized: false }
+      }
+    : {
+        host: process.env.DB_HOST || 'localhost',
+        port: process.env.DB_PORT || 5432,
+        database: process.env.DB_NAME || 'crm_family',
+        user: process.env.DB_USER || 'crm_user',
+        password: process.env.DB_PASSWORD || 'crm_password_secure'
+      }
+);
 
 pool.on('error', (err) => {
   console.error('Erro inesperado no pool de conexão', err);
