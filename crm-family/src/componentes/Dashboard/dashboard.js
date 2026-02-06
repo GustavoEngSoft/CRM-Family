@@ -21,6 +21,20 @@ function Dashboard() {
     percentual: 0
   });
 
+  const numberFormatter = new Intl.NumberFormat('pt-BR');
+  const formatNumber = (value) => numberFormatter.format(value || 0);
+  const formatDelta = (value) => {
+    const delta = Number(value || 0);
+    const prefix = delta > 0 ? '↑ ' : delta < 0 ? '↓ ' : '';
+    return `${prefix}${formatNumber(Math.abs(delta))}`;
+  };
+  const formatPercentDelta = (value) => {
+    const delta = Number(value || 0);
+    const prefix = delta > 0 ? '↑ ' : delta < 0 ? '↓ ' : '';
+    const sign = delta > 0 ? '+' : '';
+    return `${prefix}${sign}${delta}%`;
+  };
+
   useEffect(() => {
     loadDashboardData();
   }, []);
@@ -32,7 +46,7 @@ function Dashboard() {
         DashboardAPI.getStats(),
         DashboardAPI.getCrescimentoMensal(),
         DashboardAPI.getAcompanhamentosDiarios(),
-        DashboardAPI.getAtividade()
+        DashboardAPI.getAtividade(),
       ]);
 
       setStats(statsData);
@@ -64,29 +78,42 @@ function Dashboard() {
           <>
             <div className="stats-cards">
               <div className="stat-card stat-blue">
-                <div className="stat-label">Pessoas Ativas</div>
-                <div className="stat-value">{stats.pessoasAtivas}</div>
-                <div className="stat-change positive">↑ {stats.membrosNovos}</div>
+                <div className="stat-content">
+                  <div className="stat-label">Pessoas Ativas</div>
+                  <div className="stat-value">{formatNumber(stats.pessoasAtivas)}</div>
+                  <div className={`stat-change ${stats.membrosNovos >= 0 ? 'positive' : 'negative'}`}>
+                    {formatDelta(stats.membrosNovos)}
+                  </div>
+                </div>
+                <div className="stat-icon">👥</div>
               </div>
               <div className="stat-card stat-purple">
-                <div className="stat-label">Membros Novos</div>
-                <div className="stat-value">{stats.membrosNovos}</div>
-                <div className={`stat-change ${stats.crescimentoMembros >= 0 ? 'positive' : 'negative'}`}>
-                  {stats.crescimentoMembros >= 0 ? '+' : ''}{stats.crescimentoMembros} no mês
+                <div className="stat-content">
+                  <div className="stat-label">Membros Novos</div>
+                  <div className="stat-value">{formatNumber(stats.membrosNovos)}</div>
+                  <div className={`stat-change ${stats.crescimentoMembros >= 0 ? 'positive' : 'negative'}`}>
+                    {formatDelta(stats.crescimentoMembros)} no mês
+                  </div>
                 </div>
                 <div className="stat-icon">💬</div>
               </div>
               <div className="stat-card stat-dark">
-                <div className="stat-label">Mensagens Enviadas</div>
-                <div className="stat-value">{stats.mensagensEnviadas}</div>
-                <div className="stat-change positive">↑ 30%</div>
+                <div className="stat-content">
+                  <div className="stat-label">Mensagens Enviadas</div>
+                  <div className="stat-value">{formatNumber(stats.mensagensEnviadas)}</div>
+                  <div className={`stat-change ${stats.crescimentoMensagensPercent >= 0 ? 'positive' : 'negative'}`}>
+                    {formatPercentDelta(stats.crescimentoMensagensPercent)}
+                  </div>
+                </div>
                 <div className="stat-icon">⚙️</div>
               </div>
               <div className="stat-card stat-orange">
-                <div className="stat-label">Visitas Realizadas</div>
-                <div className="stat-value">{stats.visitantesRealizadas}</div>
-                <div className={`stat-change ${stats.crescimentoVisitantes >= 0 ? 'positive' : 'negative'}`}>
-                  {stats.crescimentoVisitantes >= 0 ? '+' : ''}{stats.crescimentoVisitantes} no mês
+                <div className="stat-content">
+                  <div className="stat-label">Visitas Realizadas</div>
+                  <div className="stat-value">{formatNumber(stats.visitantesRealizadas)}</div>
+                  <div className={`stat-change ${stats.crescimentoVisitantes >= 0 ? 'positive' : 'negative'}`}>
+                    {formatDelta(stats.crescimentoVisitantes)} no mês
+                  </div>
                 </div>
                 <div className="stat-icon">🏆</div>
               </div>

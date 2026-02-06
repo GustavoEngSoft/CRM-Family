@@ -10,6 +10,7 @@ import relatoriosRoutes from './routes/relatorios.routes.js';
 import emailRoutes from './routes/email.routes.js';
 import whatsappRoutes from './routes/whatsapp.routes.js';
 import dashboardRoutes from './routes/dashboard.routes.js';
+import eventosRoutes from './routes/eventos.routes.js';
 
 dotenv.config();
 
@@ -38,6 +39,7 @@ app.use('/api/relatorios', relatoriosRoutes);
 app.use('/api/email', emailRoutes);
 app.use('/api/whatsapp', whatsappRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/eventos', eventosRoutes);
 
 // Error handling
 app.use((err, req, res, next) => {

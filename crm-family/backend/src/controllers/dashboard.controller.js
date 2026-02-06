@@ -26,6 +26,19 @@ export async function getStats(req, res) {
       ['enviado']
     );
 
+    const mensagensUltimos30 = await query(
+      `SELECT COUNT(*) as total FROM comunicacoes
+       WHERE status = $1 AND data_comunicacao >= NOW() - INTERVAL '30 days'`,
+      ['enviado']
+    );
+
+    const mensagensAnteriores30 = await query(
+      `SELECT COUNT(*) as total FROM comunicacoes
+       WHERE status = $1 AND data_comunicacao >= NOW() - INTERVAL '60 days'
+       AND data_comunicacao < NOW() - INTERVAL '30 days'`,
+      ['enviado']
+    );
+
     // Visitantes (pessoas com tag 'visitante')
     const visitantes = await query(
       "SELECT COUNT(*) as total FROM pessoas WHERE 'visitante' = ANY(tags)"
@@ -39,12 +52,21 @@ export async function getStats(req, res) {
 
     const crescimentoVisitantes = parseInt(visitantes.rows[0].total) - parseInt(visitantesAnteriores.rows[0].total);
     const crescimentoMembros = parseInt(membrosNovos.rows[0].total) - parseInt(membrosAnteriores.rows[0].total);
+    const mensagensAtual = parseInt(mensagensUltimos30.rows[0].total);
+    const mensagensAnterior = parseInt(mensagensAnteriores30.rows[0].total);
+    const crescimentoMensagens = mensagensAtual - mensagensAnterior;
+    const crescimentoMensagensPercent = mensagensAnterior > 0
+      ? Math.round((crescimentoMensagens / mensagensAnterior) * 100)
+      : mensagensAtual > 0
+        ? 100
+        : 0;
 
     res.json({
       pessoasAtivas: parseInt(pessoasAtivas.rows[0].total),
       membrosNovos: parseInt(membrosNovos.rows[0].total),
       crescimentoMembros: crescimentoMembros,
       mensagensEnviadas: parseInt(mensagensEnviadas.rows[0].total),
+      crescimentoMensagensPercent: crescimentoMensagensPercent,
       visitantesRealizadas: parseInt(visitantes.rows[0].total),
       crescimentoVisitantes: crescimentoVisitantes
     });

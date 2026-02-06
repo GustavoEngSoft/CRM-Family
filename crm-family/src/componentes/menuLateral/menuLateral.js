@@ -58,6 +58,13 @@ function MenuLateral() {
             <div className="menu-submenu">
               <div 
                 className="menu-subitem"
+                onClick={() => handleNavigation('/categorias-tags')}
+              >
+                Categorias/Tags
+              </div>
+
+              <div 
+                className="menu-subitem"
                 onClick={() => handleNavigation('/tag/lideres')}
               >
                 Líderes
@@ -86,12 +93,6 @@ function MenuLateral() {
               >
                 Visitantes
               </div>
-              <div 
-                className="menu-subitem"
-                onClick={() => handleNavigation('/categorias-tags')}
-              >
-                Tags/Categorias
-              </div>
             </div>
           )}
         </div>
@@ -103,6 +104,16 @@ function MenuLateral() {
           >
             <span className="menu-icon">🔄</span>
             <span className="menu-text">Acompanhamento</span>
+          </div>
+        </div>
+
+        <div className="menu-item">
+          <div 
+            className="menu-item-header"
+            onClick={() => handleNavigation('/eventos')}
+          >
+            <span className="menu-icon">📅</span>
+            <span className="menu-text">Eventos</span>
           </div>
         </div>
 

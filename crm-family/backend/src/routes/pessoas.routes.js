@@ -6,6 +6,9 @@ const router = express.Router();
 // GET - Listar todas as pessoas com paginação
 router.get('/', pessoasController.list);
 
+// GET - Obter estatísticas das tags
+router.get('/stats/tags', pessoasController.getTagStats);
+
 // GET - Obter pessoas por tag
 router.get('/tag/:tag', pessoasController.getByTag);
 

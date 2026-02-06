@@ -75,9 +75,38 @@ CREATE TABLE IF NOT EXISTS relatorios (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Tabela de Eventos
+CREATE TABLE IF NOT EXISTS eventos (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  nome VARCHAR(255) NOT NULL,
+  data DATE NOT NULL,
+  horario TIME NOT NULL,
+  descricao TEXT,
+  local VARCHAR(255),
+  ativo BOOLEAN DEFAULT true,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Tabela de Inscrições em Eventos
+CREATE TABLE IF NOT EXISTS inscricoes_eventos (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  evento_id UUID NOT NULL REFERENCES eventos(id) ON DELETE CASCADE,
+  nome VARCHAR(255) NOT NULL,
+  telefone VARCHAR(20) NOT NULL,
+  endereco TEXT NOT NULL,
+  tipo VARCHAR(50) NOT NULL, -- membro, visitante
+  data_inscricao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  ativo BOOLEAN DEFAULT true,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Índices
 CREATE INDEX idx_pessoas_email ON pessoas(email);
 CREATE INDEX idx_pessoas_cpf ON pessoas(cpf);
 CREATE INDEX idx_comunicacoes_pessoa ON comunicacoes(pessoa_id);
 CREATE INDEX idx_acompanhamentos_pessoa ON acompanhamentos(pessoa_id);
 CREATE INDEX idx_usuarios_email ON usuarios(email);
+CREATE INDEX idx_eventos_data ON eventos(data);
+CREATE INDEX idx_inscricoes_evento ON inscricoes_eventos(evento_id);

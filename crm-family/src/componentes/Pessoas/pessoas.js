@@ -12,6 +12,7 @@ function Pessoas() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showModal, setShowModal] = useState(false);
+  const [tagStats, setTagStats] = useState([]);
   const [formData, setFormData] = useState({
     nome: '',
     email: '',
@@ -43,6 +44,7 @@ function Pessoas() {
 
   useEffect(() => {
     loadPessoas();
+    loadTagStats();
   }, []);
 
   const loadPessoas = async () => {
@@ -59,6 +61,15 @@ function Pessoas() {
     }
   };
 
+  const loadTagStats = async () => {
+    try {
+      const response = await PessoasAPI.getTagStats();
+      setTagStats(response.data || []);
+    } catch (err) {
+      console.error('Erro ao carregar estatísticas de tags:', err);
+    }
+  };
+
   const handleTagClick = (slug) => {
     navigate(`/tag/${slug}`);
   };
@@ -68,6 +79,15 @@ function Pessoas() {
     return pessoas.filter(p => 
       p.tags && p.tags.some(t => t.toLowerCase() === tagName.toLowerCase())
     ).length;
+  };
+
+  // Obter mudança mensal da tag a partir dos dados do banco
+  const getTagChange = (tagName) => {
+    const stat = tagStats.find(s => s.tag === tagName.toLowerCase());
+    if (!stat || stat.monthChange === 0) {
+      return 'sem mudanças';
+    }
+    return `+${stat.monthChange} no mês`;
   };
 
   const handleOpenModal = () => {
@@ -119,6 +139,7 @@ function Pessoas() {
       setSaving(true);
       await PessoasAPI.create(formData);
       await loadPessoas(); // Recarregar lista
+      await loadTagStats(); // Recarregar estatísticas
       handleCloseModal();
       alert('Pessoa adicionada com sucesso!');
     } catch (err) {
@@ -157,7 +178,7 @@ function Pessoas() {
                   {loading ? '...' : getTagCount(cat.name).toLocaleString('pt-BR')}
                 </div>
                 <div className="categoria-change">
-                  <span className="change-icon"></span> {cat.change}
+                  <span className="change-icon"></span> {loading ? '...' : getTagChange(cat.name)}
                 </div>
               </div>
             ))}

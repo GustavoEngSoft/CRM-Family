@@ -92,6 +92,13 @@ export const PessoasAPI = {
     return handleResponse(response);
   },
 
+  getTagStats: async () => {
+    const response = await fetch(`${API_URL}/pessoas/stats/tags`, {
+      headers: getHeaders()
+    });
+    return handleResponse(response);
+  },
+
   create: async (pessoa) => {
     const response = await fetch(`${API_URL}/pessoas`, {
       method: 'POST',

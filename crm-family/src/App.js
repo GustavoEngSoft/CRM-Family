@@ -10,6 +10,8 @@ import PessoasPorTag from './componentes/PessoasPorTag/pessoasPorTag';
 import Acompanhamento from './componentes/Acompanhamento/acompanhamento';
 import Comunicacao from './componentes/Comunicacao/comunicacao';
 import Relatorios from './componentes/Relatorios/relatorios';
+import Eventos from './componentes/Eventos/eventos';
+import RelatorioEventos from './componentes/RelatorioEventos/relatorioEventos';
 
 function App() {
   return (
@@ -22,6 +24,9 @@ function App() {
             <Route path="/categorias-tags" element={<PrivateRoute><Pessoas /></PrivateRoute>} />
             <Route path="/tag/:tagName" element={<PrivateRoute><PessoasPorTag /></PrivateRoute>} />
             <Route path="/acompanhamento" element={<PrivateRoute><Acompanhamento /></PrivateRoute>} />
+            <Route path="/eventos" element={<PrivateRoute><Eventos /></PrivateRoute>} />
+            <Route path="/eventos/:eventoId" element={<PrivateRoute><Eventos /></PrivateRoute>} />
+            <Route path="/relatorio-eventos/:eventoId" element={<PrivateRoute><RelatorioEventos /></PrivateRoute>} />
             <Route path="/comunicacao" element={<PrivateRoute><Comunicacao /></PrivateRoute>} />
             <Route path="/relatorios" element={<PrivateRoute><Relatorios /></PrivateRoute>} />
           </Routes>

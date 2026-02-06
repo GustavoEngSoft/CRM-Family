@@ -137,3 +137,44 @@ export async function delete_(req, res) {
 
 // Renomeia a função para evitar conflito com palavra-chave
 export { delete_ as delete };
+
+export async function getTagStats(req, res) {
+  try {
+    // Lista de tags que queremos estatísticas
+    const tagsToCheck = ['Líderes', 'Obreiros', 'Voluntários', 'Membros', 'Visitantes'];
+    
+    const stats = [];
+
+    for (const tagName of tagsToCheck) {
+      // Conta total de pessoas com essa tag
+      const totalResult = await query(
+        `SELECT COUNT(*) as total FROM pessoas 
+         WHERE ativo = true AND $1 = ANY(tags)`,
+        [tagName]
+      );
+
+      // Conta pessoas adicionadas no mês atual com essa tag
+      const monthResult = await query(
+        `SELECT COUNT(*) as count FROM pessoas 
+         WHERE ativo = true 
+         AND $1 = ANY(tags)
+         AND DATE_TRUNC('month', created_at) = DATE_TRUNC('month', CURRENT_TIMESTAMP)`,
+        [tagName]
+      );
+
+      const total = parseInt(totalResult.rows[0].total) || 0;
+      const monthChange = parseInt(monthResult.rows[0].count) || 0;
+
+      stats.push({
+        tag: tagName.toLowerCase(),
+        total: total,
+        monthChange: monthChange
+      });
+    }
+
+    res.json({ data: stats });
+  } catch (error) {
+    console.error('Erro ao obter estatísticas de tags:', error);
+    res.status(500).json({ error: error.message });
+  }
+}
