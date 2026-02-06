@@ -39,18 +39,24 @@ export async function getStats(req, res) {
       ['enviado']
     );
 
-    // Visitantes (pessoas com tag 'visitante')
-    const visitantes = await query(
-      "SELECT COUNT(*) as total FROM pessoas WHERE 'visitante' = ANY(tags)"
+    // Visitas realizadas (acompanhamentos do tipo 'visita' concluídos no mês)
+    const visitasRealizadas = await query(
+      `SELECT COUNT(*) as total FROM acompanhamentos 
+       WHERE tipo = $1 AND status = $2 
+       AND updated_at >= DATE_TRUNC('month', CURRENT_DATE)`,
+      ['visita', 'concluido']
     );
 
-    // Visitantes antes de 30 dias
-    const visitantesAnteriores = await query(
-      `SELECT COUNT(*) as total FROM pessoas 
-       WHERE 'visitante' = ANY(tags) AND created_at < NOW() - INTERVAL '30 days'`
+    // Visitas realizadas no mês anterior
+    const visitasAnteriores = await query(
+      `SELECT COUNT(*) as total FROM acompanhamentos 
+       WHERE tipo = $1 AND status = $2 
+       AND updated_at >= DATE_TRUNC('month', CURRENT_DATE - INTERVAL '1 month')
+       AND updated_at < DATE_TRUNC('month', CURRENT_DATE)`,
+      ['visita', 'concluido']
     );
 
-    const crescimentoVisitantes = parseInt(visitantes.rows[0].total) - parseInt(visitantesAnteriores.rows[0].total);
+    const crescimentoVisitas = parseInt(visitasRealizadas.rows[0].total) - parseInt(visitasAnteriores.rows[0].total);
     const crescimentoMembros = parseInt(membrosNovos.rows[0].total) - parseInt(membrosAnteriores.rows[0].total);
     const mensagensAtual = parseInt(mensagensUltimos30.rows[0].total);
     const mensagensAnterior = parseInt(mensagensAnteriores30.rows[0].total);
@@ -67,8 +73,8 @@ export async function getStats(req, res) {
       crescimentoMembros: crescimentoMembros,
       mensagensEnviadas: parseInt(mensagensEnviadas.rows[0].total),
       crescimentoMensagensPercent: crescimentoMensagensPercent,
-      visitantesRealizadas: parseInt(visitantes.rows[0].total),
-      crescimentoVisitantes: crescimentoVisitantes
+      visitantesRealizadas: parseInt(visitasRealizadas.rows[0].total),
+      crescimentoVisitantes: crescimentoVisitas
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -168,13 +174,14 @@ export async function getCrescimentoMensal(req, res) {
   try {
     const result = await query(`
       SELECT 
-        TO_CHAR(created_at, 'Month') as mes,
+        DATE_TRUNC('month', created_at) as mes_data,
         EXTRACT(MONTH FROM created_at) as mes_num,
+        EXTRACT(YEAR FROM created_at) as ano,
         COUNT(*) as total
       FROM pessoas
-      WHERE created_at >= NOW() - INTERVAL '7 months'
-      GROUP BY mes, mes_num
-      ORDER BY mes_num ASC
+      WHERE created_at >= DATE_TRUNC('month', CURRENT_DATE) - INTERVAL '6 months'
+      GROUP BY mes_data, mes_num, ano
+      ORDER BY mes_data ASC
     `);
 
     const meses = [
@@ -183,10 +190,14 @@ export async function getCrescimentoMensal(req, res) {
       'Novembro', 'Dezembro'
     ];
 
-    const data = result.rows.map(row => ({
-      month: meses[parseInt(row.mes_num) - 1],
-      value: parseInt(row.total)
-    }));
+    const data = result.rows.map(row => {
+      const mesIndex = parseInt(row.mes_num) - 1;
+      const anoCurto = String(row.ano).slice(2);
+      return {
+        month: `${meses[mesIndex].substring(0, 3)}/${anoCurto}`,
+        value: parseInt(row.total)
+      };
+    });
 
     res.json(data);
   } catch (error) {
@@ -198,12 +209,14 @@ export async function getAcompanhamentosDiarios(req, res) {
   try {
     const result = await query(`
       SELECT 
-        TO_CHAR(created_at, 'DD/MM/YY') as data,
+        TO_CHAR((updated_at::timestamp - INTERVAL '3 hours')::date, 'DD/MM/YY') as data,
         COUNT(*) as total
       FROM acompanhamentos
-      WHERE created_at >= NOW() - INTERVAL '10 days'
-      GROUP BY data, created_at
-      ORDER BY created_at ASC
+      WHERE tipo = 'visita' 
+        AND status = 'concluido'
+        AND updated_at >= NOW() - INTERVAL '10 days'
+      GROUP BY (updated_at::timestamp - INTERVAL '3 hours')::date
+      ORDER BY (updated_at::timestamp - INTERVAL '3 hours')::date ASC
     `);
 
     const data = result.rows.map(row => ({
@@ -219,28 +232,18 @@ export async function getAcompanhamentosDiarios(req, res) {
 
 export async function getAtividade(req, res) {
   try {
-    // Total de pessoas
-    const totalPessoas = await query('SELECT COUNT(*) as total FROM pessoas');
-    
-    // Pessoas ativas nos últimos 30 dias (com comunicações ou acompanhamentos)
-    const pessoasAtivas30Dias = await query(`
-      SELECT COUNT(DISTINCT pessoa_id) as total
-      FROM (
-        SELECT pessoa_id FROM comunicacoes 
-        WHERE data_comunicacao >= NOW() - INTERVAL '30 days'
-        UNION
-        SELECT pessoa_id FROM acompanhamentos 
-        WHERE created_at >= NOW() - INTERVAL '30 days'
-      ) as pessoas_ativas
-    `);
+    const totalAtivas = await query('SELECT COUNT(*) as total FROM pessoas WHERE ativo = true');
+    const totalInativas = await query('SELECT COUNT(*) as total FROM pessoas WHERE ativo = false');
 
-    const total = parseInt(totalPessoas.rows[0].total);
-    const ativas = parseInt(pessoasAtivas30Dias.rows[0].total);
+    const ativas = parseInt(totalAtivas.rows[0].total);
+    const inativas = parseInt(totalInativas.rows[0].total);
+    const total = ativas + inativas;
     const percentual = total > 0 ? Math.round((ativas / total) * 100) : 0;
 
     res.json({
       total: total,
       ativas: ativas,
+      inativas: inativas,
       percentual: percentual
     });
   } catch (error) {

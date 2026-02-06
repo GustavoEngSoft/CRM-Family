@@ -18,6 +18,7 @@ function Dashboard() {
   const [atividade, setAtividade] = useState({
     total: 0,
     ativas: 0,
+    inativas: 0,
     percentual: 0
   });
 
@@ -61,8 +62,12 @@ function Dashboard() {
     }
   };
 
-  const maxValue = monthlyData.length > 0 ? Math.max(...monthlyData.map(d => d.value)) : 1;
-  const maxDaily = dailyData.length > 0 ? Math.max(...dailyData.map(d => d.value)) : 1;
+  const maxValue = monthlyData.length > 0 ? Math.max(...monthlyData.map(d => d.value), 1) : 1;
+  const maxDaily = dailyData.length > 0 ? Math.max(...dailyData.map(d => d.value), 1) : 1;
+  const monthlyTicksBase = maxValue <= 5
+    ? Array.from({ length: maxValue + 1 }, (_, i) => i)
+    : [0, Math.ceil(maxValue / 4), Math.ceil(maxValue / 2), Math.ceil(maxValue * 3 / 4), maxValue];
+  const monthlyTicks = Array.from(new Set(monthlyTicksBase));
 
   return (
     <div className="dashboard-container">
@@ -121,29 +126,63 @@ function Dashboard() {
 
             <div className="charts-row">
               <div className="chart-card">
-                <h3 className="chart-title">Pessoas Ativas (Últimos 30 dias)</h3>
+                <h3 className="chart-title">Pessoas Ativas/Inativas</h3>
                 <div className="gauge-chart">
                   <svg viewBox="0 0 200 120" className="gauge-svg">
-                    <path
-                      d="M 20 100 A 80 80 0 0 1 180 100"
-                      fill="none"
-                      stroke="#e0e0e0"
-                      strokeWidth="20"
-                      strokeLinecap="round"
-                    />
-                    <path
-                      d={`M 20 100 A 80 80 0 ${atividade.percentual > 50 ? '1' : '0'} 1 ${20 + (160 * atividade.percentual / 100)} ${100 - Math.sin((Math.PI * atividade.percentual) / 100) * 80}`}
-                      fill="none"
-                      stroke="#333"
-                      strokeWidth="20"
-                      strokeLinecap="round"
-                    />
-                    <text x="100" y="70" textAnchor="middle" className="gauge-label">Pessoas</text>
-                    <text x="100" y="90" textAnchor="middle" className="gauge-value">{atividade.ativas}</text>
+                    {(() => {
+                      const total = atividade.total || 0;
+                      const ativas = atividade.ativas || 0;
+                      const inativas = Math.max(total - ativas, 0);
+                      const percentAtivas = total > 0 ? (ativas / total) * 100 : 0;
+                      const percentInativas = total > 0 ? 100 - percentAtivas : 0;
+                      const endX = 20 + (160 * percentAtivas / 100);
+                      const endY = 100 - Math.sin((Math.PI * percentAtivas) / 100) * 80;
+                      const arcFlag = percentAtivas > 50 ? '1' : '0';
+                      const ativasLabel = `${Math.round(percentAtivas)}% ativas`;
+                      const inativasLabel = `${Math.round(percentInativas)}% inativas`;
+
+                      return (
+                        <>
+                          <path
+                            className="gauge-arc"
+                            d="M 20 100 A 80 80 0 0 1 180 100"
+                            fill="none"
+                            stroke="#f0b49c"
+                            strokeWidth="20"
+                            strokeLinecap="round"
+                          >
+                            <title>{`Inativas: ${formatNumber(inativas)} (${Math.round(percentInativas)}%)`}</title>
+                          </path>
+                          <path
+                            className="gauge-arc"
+                            d={`M 20 100 A 80 80 0 ${arcFlag} 1 ${endX} ${endY}`}
+                            fill="none"
+                            stroke="#2d3e6f"
+                            strokeWidth="20"
+                            strokeLinecap="round"
+                          >
+                            <title>{`Ativas: ${formatNumber(ativas)} (${Math.round(percentAtivas)}%)`}</title>
+                          </path>
+                          <text x="100" y="90" textAnchor="middle" className="gauge-label">
+                            Ativas / Inativas
+                          </text>
+                        </>
+                      );
+                    })()}
                   </svg>
                   <div className="gauge-labels">
-                    <span className="gauge-min">0</span>
-                    <span className="gauge-max">{atividade.percentual}%</span>
+                    <span className="gauge-min">{(() => {
+                      const total = atividade.total || 0;
+                      const ativas = atividade.ativas || 0;
+                      const percentAtivas = total > 0 ? (ativas / total) * 100 : 0;
+                      return `${Math.round(percentAtivas)}% ativas`;
+                    })()}</span>
+                    <span className="gauge-max">{(() => {
+                      const total = atividade.total || 0;
+                      const ativas = atividade.ativas || 0;
+                      const percentInativas = total > 0 ? 100 - (ativas / total) * 100 : 0;
+                      return `${Math.round(percentInativas)}% inativas`;
+                    })()}</span>
                   </div>
                 </div>
                   </div>
@@ -158,10 +197,10 @@ function Dashboard() {
                       <line x1="40" y1="0" x2="40" y2="160" stroke="#e0e0e0" strokeWidth="1" />
                       <line x1="40" y1="160" x2="400" y2="160" stroke="#e0e0e0" strokeWidth="1" />
                       
-                      {[0, Math.floor(maxValue/4), Math.floor(maxValue/2), Math.floor(maxValue*3/4), maxValue].map((val, i) => (
+                      {monthlyTicks.map((val, i) => (
                         <g key={i}>
-                          <line x1="35" y1={160 - i * 40} x2="40" y2={160 - i * 40} stroke="#999" strokeWidth="1" />
-                          <text x="25" y={165 - i * 40} fontSize="10" fill="#999" textAnchor="end">{val}</text>
+                          <line x1="35" y1={160 - (val / maxValue) * 160} x2="40" y2={160 - (val / maxValue) * 160} stroke="#999" strokeWidth="1" />
+                          <text x="25" y={165 - (val / maxValue) * 160} fontSize="10" fill="#999" textAnchor="end">{val}</text>
                         </g>
                       ))}
 
@@ -193,7 +232,7 @@ function Dashboard() {
                           fill="#999"
                           textAnchor="middle"
                         >
-                          {d.month.substring(0, 3)}
+                          {d.month}
                         </text>
                       ))}
                     </svg>
@@ -203,7 +242,7 @@ function Dashboard() {
                 </div>
 
             <div className="chart-card chart-full">
-              <h3 className="chart-title">Acompanhamentos por dia</h3>
+              <h3 className="chart-title">Visitas Realizadas por dia</h3>
               <div className="bar-chart">
                 {dailyData.length === 0 ? (
                   <div style={{textAlign: 'center', padding: '40px'}}>Sem dados disponíveis</div>
@@ -212,10 +251,10 @@ function Dashboard() {
                     <line x1="40" y1="0" x2="40" y2="200" stroke="#e0e0e0" strokeWidth="1" />
                     <line x1="40" y1="200" x2="900" y2="200" stroke="#e0e0e0" strokeWidth="1" />
                     
-                    {[0, Math.floor(maxDaily/5), Math.floor(maxDaily*2/5), Math.floor(maxDaily*3/5), Math.floor(maxDaily*4/5), maxDaily].map((val, i) => (
+                    {Array.from({length: Math.min(maxDaily + 1, 6)}, (_, i) => i).map((val, i) => (
                       <g key={i}>
-                        <line x1="35" y1={200 - i * 40} x2="40" y2={200 - i * 40} stroke="#999" strokeWidth="1" />
-                        <text x="25" y={205 - i * 40} fontSize="12" fill="#999" textAnchor="end">{val}</text>
+                        <line x1="35" y1={200 - (val / maxDaily) * 200} x2="40" y2={200 - (val / maxDaily) * 200} stroke="#999" strokeWidth="1" />
+                        <text x="25" y={205 - (val / maxDaily) * 200} fontSize="12" fill="#999" textAnchor="end">{val}</text>
                       </g>
                     ))}
 

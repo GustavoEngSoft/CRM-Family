@@ -214,6 +214,10 @@
   height: auto;
 }
 
+.gauge-arc {
+  cursor: pointer;
+}
+
 .gauge-label {
   font-size: 12px;
   fill: #999;
@@ -223,6 +227,11 @@
   font-size: 24px;
   font-weight: 700;
   fill: #333;
+}
+
+.gauge-subvalue {
+  font-size: 12px;
+  fill: #777;
 }
 
 .gauge-labels {

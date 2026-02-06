@@ -27,6 +27,7 @@ function Acompanhamento() {
 		pessoa_id: '',
 		data_prevista: '',
 		prioridade: 'media',
+		tipo: 'geral',
 		status: 'pendente'
 	});
 
@@ -34,6 +35,14 @@ function Acompanhamento() {
 		{ value: 'baixa', label: 'Baixa' },
 		{ value: 'media', label: 'Média' },
 		{ value: 'alta', label: 'Alta' }
+	];
+
+	const tipos = [
+		{ value: 'geral', label: 'Geral', icon: '📋' },
+		{ value: 'visita', label: 'Visita', icon: '🏠' },
+		{ value: 'reuniao', label: 'Reunião', icon: '👥' },
+		{ value: 'contato', label: 'Contato', icon: '📞' },
+		{ value: 'acompanhamento', label: 'Acompanhamento', icon: '📊' }
 	];
 
 	useEffect(() => {
@@ -193,6 +202,7 @@ function Acompanhamento() {
 			pessoa_id: '',
 			data_prevista: '',
 			prioridade: 'media',
+			tipo: 'geral',
 			status: 'pendente'
 		});
 	};
@@ -215,6 +225,7 @@ function Acompanhamento() {
 			pessoa_id: item.pessoa_id || '',
 			data_prevista: item.data_prevista ? item.data_prevista.split('T')[0] : '',
 			prioridade: item.prioridade || 'media',
+			tipo: item.tipo || 'geral',
 			status: item.status || columnId
 		});
 		setShowModal(true);
@@ -238,6 +249,11 @@ function Acompanhamento() {
 	const getPessoaNome = (pessoaId) => {
 		const pessoa = pessoas.find(p => p.id === pessoaId);
 		return pessoa ? pessoa.nome : 'Não atribuído';
+	};
+
+	const getTipoInfo = (tipo) => {
+		const tipoObj = tipos.find(t => t.value === tipo);
+		return tipoObj || { icon: '📋', label: 'Geral' };
 	};
 
 	const getPrioridadeColor = (prioridade) => {
@@ -396,6 +412,11 @@ function Acompanhamento() {
 												</div>
 											</div>
 											<div className="kanban-card-title">{item.titulo}</div>
+											{item.tipo && (
+												<div className="kanban-card-type">
+													{getTipoInfo(item.tipo).icon} {getTipoInfo(item.tipo).label}
+												</div>
+											)}
 											{item.prioridade && (
 												<div 
 													className="kanban-card-priority"
@@ -478,6 +499,21 @@ function Acompanhamento() {
 						</div>
 
 						<div className="form-group-acomp">
+							<label className="form-label-acomp">Tipo de Tarefa</label>
+							<select
+								value={newTask.tipo}
+								onChange={(e) => setNewTask({ ...newTask, tipo: e.target.value })}
+								className="form-select-acomp"
+							>
+								{tipos.map((t) => (
+									<option key={t.value} value={t.value}>
+										{t.icon} {t.label}
+									</option>
+								))}
+							</select>
+						</div>
+
+						<div className="form-group-acomp">
 							<label className="form-label-acomp">Prioridade</label>
 							<select
 								value={newTask.prioridade}
@@ -554,6 +590,13 @@ function Acompanhamento() {
 							<div className="view-group">
 								<label className="view-label">Pessoa</label>
 								<p className="view-text">👤 {getPessoaNome(viewingTask.pessoa_id)}</p>
+							</div>
+						)}
+
+						{viewingTask.tipo && (
+							<div className="view-group">
+								<label className="view-label">Tipo de Tarefa</label>
+								<p className="view-text">{getTipoInfo(viewingTask.tipo).icon} {getTipoInfo(viewingTask.tipo).label}</p>
 							</div>
 						)}
 

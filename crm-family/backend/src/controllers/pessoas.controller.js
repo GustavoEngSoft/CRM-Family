@@ -6,13 +6,16 @@ export async function list(req, res) {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const offset = (page - 1) * limit;
+    const includeInativos = req.query.includeInativos === '1' || req.query.includeInativos === 'true';
+
+    const whereClause = includeInativos ? '' : 'WHERE ativo = true';
 
     const result = await query(
-      'SELECT * FROM pessoas WHERE ativo = true ORDER BY created_at DESC LIMIT $1 OFFSET $2',
+      `SELECT * FROM pessoas ${whereClause} ORDER BY created_at DESC LIMIT $1 OFFSET $2`,
       [limit, offset]
     );
 
-    const countResult = await query('SELECT COUNT(*) FROM pessoas WHERE ativo = true');
+    const countResult = await query(`SELECT COUNT(*) FROM pessoas ${whereClause}`);
     const total = parseInt(countResult.rows[0].count);
 
     res.json({
@@ -47,8 +50,11 @@ export async function getById(req, res) {
 export async function getByTag(req, res) {
   try {
     const { tag } = req.params;
+    const includeInativos = req.query.includeInativos === '1' || req.query.includeInativos === 'true';
+    const statusClause = includeInativos ? '' : 'AND ativo = true';
+
     const result = await query(
-      'SELECT * FROM pessoas WHERE $1 = ANY(tags) AND ativo = true ORDER BY created_at DESC',
+      `SELECT * FROM pessoas WHERE $1 = ANY(tags) ${statusClause} ORDER BY created_at DESC`,
       [tag]
     );
 

@@ -117,17 +117,23 @@
   align-items: center;
 }
 
+.pessoa-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .pessoa-nome {
   font-size: 16px;
   font-weight: 500;
   color: #333;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
-
-.pessoa-actions {
-  display: flex;
-  gap: 10px;
-  align-items: center;
+.pessoa-status {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 12px;
 }
 
 .pessoa-edit-btn {
@@ -241,14 +247,14 @@
   }
 
   .pessoa-item {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 15px;
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
   }
 
   .pessoa-actions {
-    width: 100%;
-    justify-content: space-between;
+    width: auto;
+    justify-content: flex-end;
   }
 }
 

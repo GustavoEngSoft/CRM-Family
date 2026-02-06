@@ -51,8 +51,8 @@ function PessoasPorTag() {
     try {
       setLoading(true);
       const tagToSearch = tagNames[tagName] || tagName;
-      const data = await PessoasAPI.getByTag(tagToSearch);
-      setPessoas(data.map(p => ({ ...p, selected: false })));
+      const data = await PessoasAPI.getByTag(tagToSearch, true);
+      setPessoas(data);
       setError('');
     } catch (err) {
       setError('Erro ao carregar pessoas: ' + err.message);
@@ -75,10 +75,13 @@ function PessoasPorTag() {
   const endIndex = startIndex + itemsPerPage;
   const currentPessoas = filteredPessoas.slice(startIndex, endIndex);
 
-  const toggleSelected = (id) => {
-    setPessoas(pessoas.map(p =>
-      p.id === id ? { ...p, selected: !p.selected } : p
-    ));
+  const handleToggleAtivo = async (pessoa) => {
+    try {
+      const updated = await PessoasAPI.update(pessoa.id, { ativo: !pessoa.ativo });
+      setPessoas(pessoas.map(p => (p.id === pessoa.id ? { ...p, ativo: updated.ativo } : p)));
+    } catch (err) {
+      alert('Erro ao atualizar status: ' + err.message);
+    }
   };
 
   const handleEditClick = (pessoa) => {
@@ -183,8 +186,9 @@ function PessoasPorTag() {
                   ✏️
                 </button>
                 <button
-                  className={`pessoa-check-btn ${pessoa.selected ? 'selected' : ''}`}
-                  onClick={() => toggleSelected(pessoa.id)}
+                  className={`pessoa-check-btn ${pessoa.ativo ? 'selected' : ''}`}
+                  onClick={() => handleToggleAtivo(pessoa)}
+                  title={pessoa.ativo ? 'Inativar' : 'Ativar'}
                 >
                   <span className="check-icon">✓</span>
                 </button>

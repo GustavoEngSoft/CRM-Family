@@ -141,19 +141,19 @@ function Relatorios() {
                     </button>
                   </div>
                   <div className="stats-grid">
-                    <div className="stat-card">
+                    <div className="stat-card_">
                       <div className="stat-value">{membros.length}</div>
                       <div className="stat-label">Total de Membros</div>
                     </div>
-                    <div className="stat-card">
+                    <div className="stat-card_">
                       <div className="stat-value">{membros.filter(m => m.ativo).length}</div>
                       <div className="stat-label">Membros Ativos</div>
                     </div>
-                    <div className="stat-card">
+                    <div className="stat-card_">
                       <div className="stat-value">{membros.filter(m => !m.ativo).length}</div>
                       <div className="stat-label">Membros Inativos</div>
                     </div>
-                    <div className="stat-card">
+                    <div className="stat-card_">
                       <div className="stat-value">
                         {membros.length > 0 ? Math.round((membros.filter(m => m.ativo).length / membros.length) * 100) : 0}%
                       </div>
@@ -200,19 +200,19 @@ function Relatorios() {
                     </button>
                   </div>
               <div className="stats-grid">
-                <div className="stat-card">
+                <div className="stat-card_">
                   <div className="stat-value">{visitantes.length}</div>
                   <div className="stat-label">Total de Visitantes</div>
                 </div>
-                <div className="stat-card">
+                <div className="stat-card_">
                   <div className="stat-value">{visitantes.filter(v => v.tags?.includes('convertido')).length}</div>
                   <div className="stat-label">Convertidos</div>
                 </div>
-                <div className="stat-card">
+                <div className="stat-card_">
                   <div className="stat-value">{visitantes.filter(v => !v.tags?.includes('convertido')).length}</div>
                   <div className="stat-label">Não Convertidos</div>
                 </div>
-                <div className="stat-card">
+                <div className="stat-card_">
                   <div className="stat-value">
                     {visitantes.length > 0 ? Math.round((visitantes.filter(v => v.tags?.includes('convertido')).length / visitantes.length) * 100) : 0}%
                   </div>
@@ -261,19 +261,19 @@ function Relatorios() {
                 </button>
               </div>
               <div className="stats-grid">
-                <div className="stat-card">
+                <div className="stat-card_">
                   <div className="stat-value">{obreiros.length}</div>
                   <div className="stat-label">Total de Obreiros</div>
                 </div>
-                <div className="stat-card">
+                <div className="stat-card_">
                   <div className="stat-value">{obreiros.filter(o => o.ativo).length}</div>
                   <div className="stat-label">Obreiros Ativos</div>
                 </div>
-                <div className="stat-card">
+                <div className="stat-card_">
                   <div className="stat-value">{obreiros.filter(o => !o.ativo).length}</div>
                   <div className="stat-label">Obreiros Inativos</div>
                 </div>
-                <div className="stat-card">
+                <div className="stat-card_">
                   <div className="stat-value">
                     {obreiros.length > 0 ? Math.round((obreiros.filter(o => o.ativo).length / obreiros.length) * 100) : 0}%
                   </div>
@@ -322,19 +322,19 @@ function Relatorios() {
                 </button>
               </div>
               <div className="stats-grid">
-                <div className="stat-card">
+                <div className="stat-card_">
                   <div className="stat-value">{acompanhamento.length}</div>
                   <div className="stat-label">Total de Tarefas</div>
                 </div>
-                <div className="stat-card">
+                <div className="stat-card_">
                   <div className="stat-value">{acompanhamento.filter(a => a.status === 'fechado').length}</div>
                   <div className="stat-label">Concluídas</div>
                 </div>
-                <div className="stat-card">
+                <div className="stat-card_">
                   <div className="stat-value">{acompanhamento.filter(a => a.status === 'em_progresso').length}</div>
                   <div className="stat-label">Em Andamento</div>
                 </div>
-                <div className="stat-card">
+                <div className="stat-card_">
                   <div className="stat-value">{acompanhamento.filter(a => a.status === 'aberto').length}</div>
                   <div className="stat-label">Pendentes</div>
                 </div>
@@ -381,19 +381,19 @@ function Relatorios() {
                 </button>
               </div>
               <div className="stats-grid">
-                <div className="stat-card">
+                <div className="stat-card_">
                   <div className="stat-value">{mensagens.length}</div>
                   <div className="stat-label">Total de Mensagens</div>
                 </div>
-                <div className="stat-card">
+                <div className="stat-card_">
                   <div className="stat-value">{mensagens.filter(m => m.status === 'enviado').length}</div>
                   <div className="stat-label">Enviadas</div>
                 </div>
-                <div className="stat-card">
+                <div className="stat-card_">
                   <div className="stat-value">{mensagens.filter(m => m.tipo === 'email').length}</div>
                   <div className="stat-label">Emails</div>
                 </div>
-                <div className="stat-card">
+                <div className="stat-card_">
                   <div className="stat-value">{mensagens.filter(m => m.tipo === 'whatsapp').length}</div>
                   <div className="stat-label">WhatsApp</div>
                 </div>

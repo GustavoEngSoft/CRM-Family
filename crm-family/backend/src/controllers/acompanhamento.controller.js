@@ -60,7 +60,7 @@ export async function getByPessoa(req, res) {
 
 export async function create(req, res) {
   try {
-    const { pessoa_id, titulo, descricao, status, prioridade, data_inicio, data_fim, responsavel } = req.body;
+    const { pessoa_id, titulo, descricao, tipo, status, prioridade, data_inicio, data_fim, responsavel } = req.body;
 
     if (!pessoa_id || !titulo) {
       return res.status(400).json({ error: 'pessoa_id e titulo são obrigatórios' });
@@ -68,10 +68,10 @@ export async function create(req, res) {
 
     const id = uuidv4();
     const result = await query(
-      `INSERT INTO acompanhamentos (id, pessoa_id, titulo, descricao, status, prioridade, data_inicio, data_fim, responsavel)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      `INSERT INTO acompanhamentos (id, pessoa_id, titulo, descricao, tipo, status, prioridade, data_inicio, data_fim, responsavel)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
        RETURNING *`,
-      [id, pessoa_id, titulo, descricao, status || 'aberto', prioridade || 'media', data_inicio, data_fim, responsavel]
+      [id, pessoa_id, titulo, descricao, tipo || 'geral', status || 'aberto', prioridade || 'media', data_inicio, data_fim, responsavel]
     );
 
     res.status(201).json(result.rows[0]);
@@ -83,22 +83,23 @@ export async function create(req, res) {
 export async function update(req, res) {
   try {
     const { id } = req.params;
-    const { titulo, descricao, status, prioridade, data_inicio, data_fim, responsavel, resultado } = req.body;
+    const { titulo, descricao, tipo, status, prioridade, data_inicio, data_fim, responsavel, resultado } = req.body;
 
     const result = await query(
       `UPDATE acompanhamentos SET
         titulo = COALESCE($2, titulo),
         descricao = COALESCE($3, descricao),
-        status = COALESCE($4, status),
-        prioridade = COALESCE($5, prioridade),
-        data_inicio = COALESCE($6, data_inicio),
-        data_fim = COALESCE($7, data_fim),
-        responsavel = COALESCE($8, responsavel),
-        resultado = COALESCE($9, resultado),
+        tipo = COALESCE($4, tipo),
+        status = COALESCE($5, status),
+        prioridade = COALESCE($6, prioridade),
+        data_inicio = COALESCE($7, data_inicio),
+        data_fim = COALESCE($8, data_fim),
+        responsavel = COALESCE($9, responsavel),
+        resultado = COALESCE($10, resultado),
         updated_at = CURRENT_TIMESTAMP
        WHERE id = $1
        RETURNING *`,
-      [id, titulo, descricao, status, prioridade, data_inicio, data_fim, responsavel, resultado]
+      [id, titulo, descricao, tipo, status, prioridade, data_inicio, data_fim, responsavel, resultado]
     );
 
     if (result.rows.length === 0) {

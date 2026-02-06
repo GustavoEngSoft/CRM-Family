@@ -40,6 +40,7 @@ CREATE TABLE IF NOT EXISTS acompanhamentos (
   pessoa_id UUID NOT NULL REFERENCES pessoas(id) ON DELETE CASCADE,
   titulo VARCHAR(255) NOT NULL,
   descricao TEXT,
+  tipo VARCHAR(50) DEFAULT 'geral', -- visita, reuniao, contato, geral
   status VARCHAR(50) DEFAULT 'aberto', -- aberto, em_progresso, fechado
   prioridade VARCHAR(20) DEFAULT 'media', -- baixa, media, alta
   data_inicio DATE,

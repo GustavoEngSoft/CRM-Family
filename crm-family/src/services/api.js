@@ -71,8 +71,9 @@ export const AuthAPI = {
 // ==================== PESSOAS ====================
 
 export const PessoasAPI = {
-  list: async (page = 1, limit = 10) => {
-    const response = await fetch(`${API_URL}/pessoas?page=${page}&limit=${limit}`, {
+  list: async (page = 1, limit = 10, includeInativos = false) => {
+    const query = includeInativos ? '&includeInativos=1' : '';
+    const response = await fetch(`${API_URL}/pessoas?page=${page}&limit=${limit}${query}`, {
       headers: getHeaders()
     });
     return handleResponse(response);
@@ -85,8 +86,9 @@ export const PessoasAPI = {
     return handleResponse(response);
   },
 
-  getByTag: async (tag) => {
-    const response = await fetch(`${API_URL}/pessoas/tag/${tag}`, {
+  getByTag: async (tag, includeInativos = false) => {
+    const query = includeInativos ? '?includeInativos=1' : '';
+    const response = await fetch(`${API_URL}/pessoas/tag/${tag}${query}`, {
       headers: getHeaders()
     });
     return handleResponse(response);
