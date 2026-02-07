@@ -17,6 +17,8 @@ function Eventos() {
   const [showModalEvento, setShowModalEvento] = useState(false);
   const [showModalInscricao, setShowModalInscricao] = useState(false);
   const [buscaInscricao, setBuscaInscricao] = useState('');
+  const [paginaInscricoes, setPaginaInscricoes] = useState(1);
+  const INSCRICOES_POR_PAGINA = 10;
 
   const [formEvento, setFormEvento] = useState({
     nome: '',
@@ -71,6 +73,7 @@ function Eventos() {
       const data = await response.json();
       setSelectedEvento(data.evento);
       setInscricoes(data.inscricoes);
+      setPaginaInscricoes(1);
     } catch (err) {
       setError(err.message);
       console.error('Erro:', err);
@@ -198,6 +201,33 @@ function Eventos() {
       })
     : inscricoes;
 
+  useEffect(() => {
+    setPaginaInscricoes(1);
+  }, [buscaInscricao, selectedEvento?.id]);
+
+  const totalPaginasInscricoes = Math.max(
+    1,
+    Math.ceil(inscricoesFiltradas.length / INSCRICOES_POR_PAGINA)
+  );
+
+  useEffect(() => {
+    if (paginaInscricoes > totalPaginasInscricoes) {
+      setPaginaInscricoes(totalPaginasInscricoes);
+    }
+  }, [paginaInscricoes, totalPaginasInscricoes]);
+
+  const paginaAtualInscricoes = Math.min(
+    paginaInscricoes,
+    totalPaginasInscricoes
+  );
+  const inicioInscricoes =
+    (paginaAtualInscricoes - 1) * INSCRICOES_POR_PAGINA;
+  const fimInscricoes = inicioInscricoes + INSCRICOES_POR_PAGINA;
+  const inscricoesPaginadas = inscricoesFiltradas.slice(
+    inicioInscricoes,
+    fimInscricoes
+  );
+
   return (
     <div className="eventos-container">
       <MenuLateral />
@@ -324,8 +354,9 @@ function Eventos() {
               ) : inscricoesFiltradas.length === 0 ? (
                 <p className="empty-message">Nenhum inscrito encontrado para a busca</p>
               ) : (
-                <div className="inscricoes-table">
-                  <table>
+                <>
+                  <div className="inscricoes-table">
+                    <table>
                     <thead>
                       <tr>
                         <th>Nome</th>
@@ -337,7 +368,7 @@ function Eventos() {
                       </tr>
                     </thead>
                     <tbody>
-                      {inscricoesFiltradas.map(inscricao => (
+                      {inscricoesPaginadas.map(inscricao => (
                         <tr key={inscricao.id}>
                           <td>{inscricao.nome}</td>
                           <td>{inscricao.telefone}</td>
@@ -360,8 +391,52 @@ function Eventos() {
                         </tr>
                       ))}
                     </tbody>
-                  </table>
-                </div>
+                    </table>
+                  </div>
+                  {totalPaginasInscricoes > 1 && (
+                    <div className="inscricoes-pagination">
+                      <div className="pagination-group">
+                        <button
+                          className="pagination-btn"
+                          onClick={() => setPaginaInscricoes(1)}
+                          disabled={paginaAtualInscricoes === 1}
+                        >
+                          Primeiro
+                        </button>
+                        <button
+                          className="pagination-btn"
+                          onClick={() =>
+                            setPaginaInscricoes(paginaAtualInscricoes - 1)
+                          }
+                          disabled={paginaAtualInscricoes === 1}
+                        >
+                          Anterior
+                        </button>
+                      </div>
+                      <span className="pagination-info">
+                        Página {paginaAtualInscricoes} de {totalPaginasInscricoes}
+                      </span>
+                      <div className="pagination-group">
+                        <button
+                          className="pagination-btn"
+                          onClick={() =>
+                            setPaginaInscricoes(paginaAtualInscricoes + 1)
+                          }
+                          disabled={paginaAtualInscricoes === totalPaginasInscricoes}
+                        >
+                          Próxima
+                        </button>
+                        <button
+                          className="pagination-btn"
+                          onClick={() => setPaginaInscricoes(totalPaginasInscricoes)}
+                          disabled={paginaAtualInscricoes === totalPaginasInscricoes}
+                        >
+                          Última
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </div>
