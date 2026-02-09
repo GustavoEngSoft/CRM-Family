@@ -13,10 +13,24 @@ function RelatorioEventos() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [filterTipo, setFilterTipo] = useState('todos');
+  const [mensagemWhatsapp, setMensagemWhatsapp] = useState('');
+  const [whatsappLinks, setWhatsappLinks] = useState([]);
+  const [mostrarLinks, setMostrarLinks] = useState(false);
 
   useEffect(() => {
     loadEventoDetalhes();
   }, [eventoId]);
+
+  useEffect(() => {
+    if (evento && !mensagemWhatsapp) {
+      const mensagemPadrao = `Oi, pessoal! 😊
+Gostariamos de ouvir um pouco de voces sobre a experiencia que vivemos juntos no culto "${evento.nome}".
+Como voces se sentiram? O que mais marcou voces?
+Se puderem, compartilhem um pouco desse feedback com a gente — isso e muito importante pra continuarmos crescendo e melhorando 💬✨
+Fiquem a vontade para falar, sera muito especial ouvir voces 💙`;
+      setMensagemWhatsapp(mensagemPadrao);
+    }
+  }, [evento, mensagemWhatsapp]);
 
   const loadEventoDetalhes = async () => {
     try {
@@ -83,6 +97,58 @@ function RelatorioEventos() {
     document.body.appendChild(element);
     element.click();
     document.body.removeChild(element);
+  };
+
+  const normalizarTelefone = (telefone) => {
+    if (!telefone) return '';
+    let digits = telefone.replace(/\D/g, '');
+    if (digits.length === 0) return '';
+    if (!digits.startsWith('55')) {
+      digits = `55${digits}`;
+    }
+    return digits;
+  };
+
+  const montarLinkWhatsapp = (telefone, mensagem) => {
+    const texto = encodeURIComponent(mensagem);
+    return `https://wa.me/${telefone}?text=${texto}`;
+  };
+
+  const gerarLinksWhatsapp = () => {
+    if (!mensagemWhatsapp.trim()) {
+      alert('Informe a mensagem para enviar no WhatsApp.');
+      return;
+    }
+
+    if (inscricoes.length === 0) {
+      alert('Nao ha inscritos para enviar mensagens.');
+      return;
+    }
+
+    let invalidos = 0;
+    const links = inscricoes
+      .map((inscricao) => {
+        const telefone = normalizarTelefone(inscricao.telefone);
+        if (!telefone || telefone.length < 12) {
+          invalidos += 1;
+          return null;
+        }
+
+        return {
+          id: inscricao.id,
+          nome: inscricao.nome,
+          telefone,
+          url: montarLinkWhatsapp(telefone, mensagemWhatsapp)
+        };
+      })
+      .filter(Boolean);
+
+    setWhatsappLinks(links);
+    setMostrarLinks(true);
+
+    if (invalidos > 0) {
+      alert(`${invalidos} inscritos estavam sem telefone valido e foram ignorados.`);
+    }
   };
 
   const imprimirRelatorio = () => {
@@ -257,6 +323,52 @@ function RelatorioEventos() {
                 <option value="visitante">Visitantes ({totalVisitantes})</option>
               </select>
             </div>
+          </div>
+
+          <div className="whatsapp-bulk">
+            <div className="whatsapp-bulk-header">
+              <h4>📲 Enviar WhatsApp para inscritos</h4>
+              <button
+                className="btn-primary"
+                onClick={gerarLinksWhatsapp}
+              >
+                Gerar links do WhatsApp
+              </button>
+            </div>
+            <textarea
+              value={mensagemWhatsapp}
+              onChange={(e) => setMensagemWhatsapp(e.target.value)}
+              placeholder="Digite a mensagem que sera pre-preenchida no WhatsApp"
+              rows={4}
+            />
+            <p className="whatsapp-hint">
+              Gere a lista e clique manualmente em cada link para enviar.
+            </p>
+
+            {mostrarLinks && (
+              <div className="whatsapp-links">
+                {whatsappLinks.length === 0 ? (
+                  <p className="empty-message">Nenhum telefone valido para gerar links.</p>
+                ) : (
+                  <>
+                    <p className="whatsapp-links-count">
+                      Links gerados: {whatsappLinks.length}
+                    </p>
+                    <ul>
+                      {whatsappLinks.map((link) => (
+                        <li key={link.id}>
+                          <span className="whatsapp-link-name">{link.nome}</span>
+                          <span className="whatsapp-link-phone">{link.telefone}</span>
+                          <a href={link.url} target="_blank" rel="noreferrer">
+                            Abrir no WhatsApp
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  </>
+                )}
+              </div>
+            )}
           </div>
 
           {inscricoesFiltradas.length === 0 ? (
