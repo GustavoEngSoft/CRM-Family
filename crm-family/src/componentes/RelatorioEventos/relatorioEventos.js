@@ -16,6 +16,10 @@ function RelatorioEventos() {
   const [mensagemWhatsapp, setMensagemWhatsapp] = useState('');
   const [whatsappLinks, setWhatsappLinks] = useState([]);
   const [mostrarLinks, setMostrarLinks] = useState(false);
+  const [paginaAtual, setPaginaAtual] = useState(1);
+  const [paginaWhatsapp, setPaginaWhatsapp] = useState(1);
+  const [filterWhatsapp, setFilterWhatsapp] = useState('todos');
+  const ITENS_POR_PAGINA = 10;
 
   useEffect(() => {
     loadEventoDetalhes();
@@ -70,6 +74,34 @@ Fiquem a vontade para falar, sera muito especial ouvir voces 💙`;
     ? inscricoes
     : inscricoes.filter(i => i.tipo === filterTipo);
 
+  // Calcular paginação da tabela
+  const totalPaginas = Math.ceil(inscricoesFiltradas.length / ITENS_POR_PAGINA);
+  const indexInicio = (paginaAtual - 1) * ITENS_POR_PAGINA;
+  const indexFim = indexInicio + ITENS_POR_PAGINA;
+  const inscricoesPaginadas = inscricoesFiltradas.slice(indexInicio, indexFim);
+
+  // Resetar página ao mudar filtro
+  useEffect(() => {
+    setPaginaAtual(1);
+  }, [filterTipo]);
+
+  // Resetar página do WhatsApp ao mudar filtro
+  useEffect(() => {
+    setPaginaWhatsapp(1);
+  }, [filterWhatsapp]);
+
+  const mudarPagina = (novaPagina) => {
+    if (novaPagina >= 1 && novaPagina <= totalPaginas) {
+      setPaginaAtual(novaPagina);
+    }
+  };
+
+  const mudarPaginaWhatsapp = (novaPagina, totalPaginas) => {
+    if (novaPagina >= 1 && novaPagina <= totalPaginas) {
+      setPaginaWhatsapp(novaPagina);
+    }
+  };
+
   const exportarCSV = () => {
     if (inscricoes.length === 0) {
       alert('Nenhuma inscrição para exportar');
@@ -120,13 +152,30 @@ Fiquem a vontade para falar, sera muito especial ouvir voces 💙`;
       return;
     }
 
-    if (inscricoes.length === 0) {
-      alert('Nao ha inscritos para enviar mensagens.');
+    // Filtrar inscrições baseado no filtro selecionado
+    let inscricoesFiltradas = [];
+    
+    if (filterWhatsapp === 'todos') {
+      inscricoesFiltradas = inscricoes;
+    } else if (filterWhatsapp === 'membros') {
+      inscricoesFiltradas = inscricoes.filter(i => i.tipo === 'membro');
+    } else if (filterWhatsapp === 'visitantes-com-igreja') {
+      inscricoesFiltradas = inscricoes.filter(i => 
+        i.tipo === 'visitante' && i.igreja && i.igreja.toLowerCase() !== 'nenhuma'
+      );
+    } else if (filterWhatsapp === 'visitantes-sem-igreja') {
+      inscricoesFiltradas = inscricoes.filter(i => 
+        i.tipo === 'visitante' && (!i.igreja || i.igreja.toLowerCase() === 'nenhuma')
+      );
+    }
+
+    if (inscricoesFiltradas.length === 0) {
+      alert('Nao ha inscritos para enviar mensagens com o filtro selecionado.');
       return;
     }
 
     let invalidos = 0;
-    const links = inscricoes
+    const links = inscricoesFiltradas
       .map((inscricao) => {
         const telefone = normalizarTelefone(inscricao.telefone);
         if (!telefone || telefone.length < 12) {
@@ -138,6 +187,8 @@ Fiquem a vontade para falar, sera muito especial ouvir voces 💙`;
           id: inscricao.id,
           nome: inscricao.nome,
           telefone,
+          igreja: inscricao.igreja || 'Nenhuma',
+          tipo: inscricao.tipo,
           url: montarLinkWhatsapp(telefone, mensagemWhatsapp)
         };
       })
@@ -145,6 +196,7 @@ Fiquem a vontade para falar, sera muito especial ouvir voces 💙`;
 
     setWhatsappLinks(links);
     setMostrarLinks(true);
+    setPaginaWhatsapp(1);
 
     if (invalidos > 0) {
       alert(`${invalidos} inscritos estavam sem telefone valido e foram ignorados.`);
@@ -154,6 +206,12 @@ Fiquem a vontade para falar, sera muito especial ouvir voces 💙`;
   const imprimirRelatorio = () => {
     window.print();
   };
+
+  // Calcular paginação dos links do WhatsApp
+  const totalPaginasWhatsapp = Math.ceil(whatsappLinks.length / ITENS_POR_PAGINA);
+  const indexInicioWhatsapp = (paginaWhatsapp - 1) * ITENS_POR_PAGINA;
+  const indexFimWhatsapp = indexInicioWhatsapp + ITENS_POR_PAGINA;
+  const whatsappLinksPaginados = whatsappLinks.slice(indexInicioWhatsapp, indexFimWhatsapp);
 
   if (loading) {
     return (
@@ -328,12 +386,24 @@ Fiquem a vontade para falar, sera muito especial ouvir voces 💙`;
           <div className="whatsapp-bulk">
             <div className="whatsapp-bulk-header">
               <h4>📲 Enviar WhatsApp para inscritos</h4>
-              <button
-                className="btn-primary"
-                onClick={gerarLinksWhatsapp}
-              >
-                Gerar links do WhatsApp
-              </button>
+              <div className="whatsapp-filter-container">
+                <select 
+                  className="whatsapp-filter-select"
+                  value={filterWhatsapp}
+                  onChange={(e) => setFilterWhatsapp(e.target.value)}
+                >
+                  <option value="todos">Todos</option>
+                  <option value="membros">Membros</option>
+                  <option value="visitantes-com-igreja">Visitantes com Igreja</option>
+                  <option value="visitantes-sem-igreja">Visitantes sem Igreja</option>
+                </select>
+                <button
+                  className="btn-primary"
+                  onClick={gerarLinksWhatsapp}
+                >
+                  Gerar links do WhatsApp
+                </button>
+              </div>
             </div>
             <textarea
               value={mensagemWhatsapp}
@@ -355,7 +425,7 @@ Fiquem a vontade para falar, sera muito especial ouvir voces 💙`;
                       Links gerados: {whatsappLinks.length}
                     </p>
                     <ul>
-                      {whatsappLinks.map((link) => (
+                      {whatsappLinksPaginados.map((link) => (
                         <li key={link.id}>
                           <span className="whatsapp-link-name">{link.nome}</span>
                           <span className="whatsapp-link-phone">{link.telefone}</span>
@@ -365,6 +435,46 @@ Fiquem a vontade para falar, sera muito especial ouvir voces 💙`;
                         </li>
                       ))}
                     </ul>
+
+                    {/* PAGINAÇÃO DO WHATSAPP */}
+                    {totalPaginasWhatsapp > 1 && (
+                      <div className="paginacao paginacao-whatsapp">
+                        <button 
+                          className="btn-paginacao"
+                          onClick={() => mudarPaginaWhatsapp(1, totalPaginasWhatsapp)}
+                          disabled={paginaWhatsapp === 1}
+                        >
+                          ««
+                        </button>
+                        <button 
+                          className="btn-paginacao"
+                          onClick={() => mudarPaginaWhatsapp(paginaWhatsapp - 1, totalPaginasWhatsapp)}
+                          disabled={paginaWhatsapp === 1}
+                        >
+                          ‹ Anterior
+                        </button>
+                        
+                        <span className="info-paginacao">
+                          Página {paginaWhatsapp} de {totalPaginasWhatsapp} 
+                          ({whatsappLinks.length} {whatsappLinks.length === 1 ? 'link' : 'links'})
+                        </span>
+                        
+                        <button 
+                          className="btn-paginacao"
+                          onClick={() => mudarPaginaWhatsapp(paginaWhatsapp + 1, totalPaginasWhatsapp)}
+                          disabled={paginaWhatsapp === totalPaginasWhatsapp}
+                        >
+                          Próxima ›
+                        </button>
+                        <button 
+                          className="btn-paginacao"
+                          onClick={() => mudarPaginaWhatsapp(totalPaginasWhatsapp, totalPaginasWhatsapp)}
+                          disabled={paginaWhatsapp === totalPaginasWhatsapp}
+                        >
+                          »»
+                        </button>
+                      </div>
+                    )}
                   </>
                 )}
               </div>
@@ -374,36 +484,78 @@ Fiquem a vontade para falar, sera muito especial ouvir voces 💙`;
           {inscricoesFiltradas.length === 0 ? (
             <p className="empty-message">Nenhuma inscrição encontrada</p>
           ) : (
-            <div className="tabela-inscricoes">
-              <table>
-                <thead>
-                  <tr>
-                    <th>#</th>
-                    <th>Nome</th>
-                    <th>Telefone</th>
-                    <th>Endereço</th>
-                    <th>Tipo</th>
-                    <th>Data de Inscrição</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {inscricoesFiltradas.map((inscricao, index) => (
-                    <tr key={inscricao.id}>
-                      <td>{index + 1}</td>
-                      <td className="nome-cell">{inscricao.nome}</td>
-                      <td>{inscricao.telefone}</td>
-                      <td>{inscricao.endereco}</td>
-                      <td>
-                        <span className={`badge-tipo ${inscricao.tipo}`}>
-                          {inscricao.tipo === 'membro' ? '👤 Membro' : '👁️ Visitante'}
-                        </span>
-                      </td>
-                      <td>{formatarData(inscricao.data_inscricao)}</td>
+            <>
+              <div className="tabela-inscricoes">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Nome</th>
+                      <th>Telefone</th>
+                      <th>Endereço</th>
+                      <th>Tipo</th>
+                      <th>Data de Inscrição</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {inscricoesPaginadas.map((inscricao, index) => (
+                      <tr key={inscricao.id}>
+                        <td>{indexInicio + index + 1}</td>
+                        <td className="nome-cell">{inscricao.nome}</td>
+                        <td>{inscricao.telefone}</td>
+                        <td>{inscricao.endereco}</td>
+                        <td>
+                          <span className={`badge-tipo ${inscricao.tipo}`}>
+                            {inscricao.tipo === 'membro' ? '👤 Membro' : '👁️ Visitante'}
+                          </span>
+                        </td>
+                        <td>{formatarData(inscricao.data_inscricao)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* CONTROLES DE PAGINAÇÃO DA TABELA */}
+              {totalPaginas > 1 && (
+                <div className="paginacao">
+                  <button 
+                    className="btn-paginacao"
+                    onClick={() => mudarPagina(1)}
+                    disabled={paginaAtual === 1}
+                  >
+                    ««
+                  </button>
+                  <button 
+                    className="btn-paginacao"
+                    onClick={() => mudarPagina(paginaAtual - 1)}
+                    disabled={paginaAtual === 1}
+                  >
+                    ‹ Anterior
+                  </button>
+                  
+                  <span className="info-paginacao">
+                    Página {paginaAtual} de {totalPaginas} 
+                    ({inscricoesFiltradas.length} {inscricoesFiltradas.length === 1 ? 'registro' : 'registros'})
+                  </span>
+                  
+                  <button 
+                    className="btn-paginacao"
+                    onClick={() => mudarPagina(paginaAtual + 1)}
+                    disabled={paginaAtual === totalPaginas}
+                  >
+                    Próxima ›
+                  </button>
+                  <button 
+                    className="btn-paginacao"
+                    onClick={() => mudarPagina(totalPaginas)}
+                    disabled={paginaAtual === totalPaginas}
+                  >
+                    »»
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </div>
 
